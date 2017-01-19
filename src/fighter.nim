@@ -67,11 +67,11 @@ proc main =
     discard window.setFullscreen(flag)
   defer: game.quit()
 
-  var previous = cpuTime()
+  var previous = epochTime()
   var lag = 0.0f
 
   while running: 
-    var current = cpuTime()
+    var current = epochTime()
     var elapsed = current - previous
 
     previous = current
