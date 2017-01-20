@@ -11,7 +11,11 @@ type
   Command {.pure.} = enum 
     None,
     Fullscreen,
-    Shoot
+    Shoot,
+    Left,
+    Up, 
+    Right, 
+    Down
     
   FullscreenType* {.pure.} = enum
     Windowed,
@@ -55,6 +59,44 @@ type
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
+proc isCommandPressed(game: Game, command: Command): bool = 
+  let (pressed, repeat) = game.commands[command]
+  return pressed and not repeat
+
+proc isCommand(game: Game, command: Command): bool = 
+  let (pressed, _) = game.commands[command]
+  return pressed
+
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+#=> Entity
+proc newEntity*(p: PhysicsComponent, g: PlayerGraphicsComponent): Entity = 
+  Entity(
+    velocity: 0,
+    x: 0,
+    y: 0,
+    physics: p,
+    graphics: g
+  )
+
+proc move(e: var Entity, xVel, yVel, dt: float) = 
+  e.x += xVel * dt
+  e.y += yVel * dt
+
+proc moveLeft(e: var Entity, dt: float) =
+  e.move(-e.velocity, 0, dt)
+
+proc moveRight(e: var Entity, dt: float) = 
+  e.move(e.velocity, 0, dt)
+
+proc moveUp(e: var Entity, dt: float) = 
+  e.move(0, -e.velocity, dt)
+
+proc moveDown(e: var Entity, dt: float) = 
+  e.move(0, e.velocity, dt)
+
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
 #=> Base methods
 method update(this: PhysicsComponent, e: var Entity, 
     game: Game, dt: float) {.base.} = 
@@ -68,7 +110,14 @@ proc newPlayerPhysicsComponent(): PlayerPhysicsComponent =
 
 method update(this: PlayerPhysicsComponent, e: var Entity, 
     game: Game, dt: float) =
-  e.x += e.velocity * dt
+  if game.isCommand(Command.Left):
+    e.moveLeft(dt)
+  elif game.isCommand(Command.Right):
+    e.moveRight(dt)
+  if game.isCommand(Command.Up):
+    e.moveUp(dt)
+  elif game.isCommand(Command.Down):
+    e.moveDown(dt)
 
 #=> PlayerGraphicsComponent
 proc newPlayerGraphicsComponent(ren: RendererPtr): PlayerGraphicsComponent =
@@ -106,18 +155,6 @@ proc update(em: var EntityManager, dt: float) =
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-#=> Entity
-proc newEntity*(p: PhysicsComponent, g: PlayerGraphicsComponent): Entity = 
-  Entity(
-    velocity: 0,
-    x: 0,
-    y: 0,
-    physics: p,
-    graphics: g
-  )
-
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
 proc render*(game: Game, lag: float) = 
   ## This causes the game to render itself to the specified renderer
   game.renderer.clear()
@@ -132,14 +169,18 @@ proc toCommand(key: cint): Command =
   case key:
   of K_F11:
     result = Command.Fullscreen
+  of K_W:
+    result = Command.Up
+  of K_S:
+    result = Command.Down
+  of K_A:
+    result = Command.Left
+  of K_D:
+    result = Command.Right
+  of K_Space:
+    result = Command.Shoot
   else:
     result = Command.None
-
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-proc isCommandPressed(game: Game, command: Command): bool = 
-  let (pressed, repeat) = game.commands[command]
-  return pressed and not repeat
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
