@@ -163,10 +163,10 @@ method update(this: PlayerPhysicsComponent, e: var Entity,
   game.camera.y = e.y.int
 
 #=> PlayerGraphicsComponent
-proc newPlayerGraphicsComponent(ren: RendererPtr, color: Color = (255.uint8, 0.uint8, 0.uint8)): PlayerGraphicsComponent =
+proc newPlayerGraphicsComponent(ren: RendererPtr): PlayerGraphicsComponent =
   new result 
   result.renderer = ren
-  result.color = color
+  result.color = (random(255).uint8, random(255).uint8, random(255).uint8)
 
 method render(this: PlayerGraphicsComponent, e: Entity, 
     game: Game, lag: float) = 
@@ -311,7 +311,7 @@ proc newGame*(ren: RendererPtr, size: (cint, cint)): Game =
   #Test
   var test = newEntity(
     newAIPhysicsComponent(),
-    newPlayerGraphicsComponent(result.renderer, (255.uint8, 255.uint8, 0.uint8))
+    newPlayerGraphicsComponent(result.renderer)
   )
   test.x = 200
   test.y = 200
