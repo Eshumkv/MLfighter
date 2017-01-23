@@ -22,6 +22,10 @@ proc exit() =
   running = false
 
 proc main = 
+  var
+    windowWidth: cint = 1280
+    windowHeight: cint = 720
+
   sdlFailIf(not sdl2.init(INIT_EVERYTHING)):
     "SDL init failed"
   defer: sdl2.quit() 
@@ -37,8 +41,8 @@ proc main =
     title = "Fighter",
     x = SDL_WINDOWPOS_CENTERED,
     y = SDL_WINDOWPOS_CENTERED, 
-    w = 1280, 
-    h = 720, 
+    w = windowWidth, 
+    h = windowHeight, 
     flags = SDL_WINDOW_SHOWN
   )
   sdlFailIf window.isNil: "Window could not be created"
@@ -51,7 +55,7 @@ proc main =
   sdlFailIf renderer.isNil: "Renderer could not be created"
   defer: renderer.destroy()
 
-  var game = newGame(renderer)
+  var game = newGame(renderer, (windowWidth, windowHeight))
   game.quitCallback = exit
   game.setFullscreen = proc (f: bool, ftype: FullscreenType) = 
     var flag: uint32

@@ -1,8 +1,11 @@
 import 
+  times,
   os,
   sdl2,
   sdl2.image,
-  sequtils
+  sequtils,
+  math,
+  random
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -24,20 +27,30 @@ type
 
 #=> Components
 type
+  Color = tuple 
+    r: uint8
+    g: uint8
+    b: uint8
+
   PhysicsComponent = ref object of RootObj
   GraphicsComponent = ref object of RootObj
 
   PlayerPhysicsComponent = ref object of PhysicsComponent  
   PlayerGraphicsComponent = ref object of GraphicsComponent
     renderer: RendererPtr
+    color: Color
+  
+  AIPhysicsComponent = ref object of PhysicsComponent
 
 type
-  Entity = object
+  Entity = ref EntityObj
+  EntityObj = object
     velocity: float
     x, y: float
     w, h: int
     physics: PhysicsComponent
     graphics: PlayerGraphicsComponent
+    name: string
 
 type 
   Game* = ref GameObj
@@ -47,10 +60,18 @@ type
     dt: float
     em: EntityManager
     player: Entity
+    camera: Camera2D
     commands: array[Command, (bool, bool)] # (pressed, repeat)
     setFullscreen*: (proc (isFullscreen: bool, ftype: FullscreenType): void)
     isFullscreen: bool
     quitCallback*: (proc (): void)
+    
+  Camera2D = ref CameraObj
+  CameraObj = object 
+    x: int
+    y: int
+    halfWidth: int
+    halfHeight: int
 
   EntityManager = ref EntityManagerObj
   EntityManagerObj = object
@@ -69,15 +90,31 @@ proc isCommand(game: Game, command: Command): bool =
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
+proc newCamera(w, h: int): Camera2D = 
+  new result
+  result.halfWidth = w div 2
+  result.halfHeight = h div 2
+
+proc getScreenLocation(camera: Camera2D, location: (float, float)): (cint, cint) = 
+  var 
+    screenX = (location[0].int - camera.x) + camera.halfWidth
+    screenY = (location[1].int - camera.y) + camera.halfHeight
+  
+  result = (screenX.cint, screenY.cint)
+
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
 #=> Entity
-proc newEntity*(p: PhysicsComponent, g: PlayerGraphicsComponent): Entity = 
-  Entity(
-    velocity: 0,
-    x: 0,
-    y: 0,
-    physics: p,
-    graphics: g
-  )
+proc newEntity*(p: PhysicsComponent, g: PlayerGraphicsComponent, name: string = nil): Entity = 
+  new result
+  result.physics = p
+  result.graphics = g
+  result.velocity = 100
+
+  if name == nil:
+    result.name = "entity" & $random(int.high)
+  else:
+    result.name = name
 
 proc move(e: var Entity, xVel, yVel, dt: float) = 
   e.x += xVel * dt
@@ -97,11 +134,14 @@ proc moveDown(e: var Entity, dt: float) =
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
+#=> Components
+
 #=> Base methods
 method update(this: PhysicsComponent, e: var Entity, 
     game: Game, dt: float) {.base.} = 
   discard
-method render(this: GraphicsComponent, e: Entity, lag: float) {.base.} = 
+method render(this: GraphicsComponent, e: Entity, 
+    game: Game, lag: float) {.base.} = 
   discard
 
 #=> PlayerPhysicsComponent
@@ -118,21 +158,36 @@ method update(this: PlayerPhysicsComponent, e: var Entity,
     e.moveUp(dt)
   elif game.isCommand(Command.Down):
     e.moveDown(dt)
+  
+  game.camera.x = e.x.int
+  game.camera.y = e.y.int
 
 #=> PlayerGraphicsComponent
-proc newPlayerGraphicsComponent(ren: RendererPtr): PlayerGraphicsComponent =
+proc newPlayerGraphicsComponent(ren: RendererPtr, color: Color = (255.uint8, 0.uint8, 0.uint8)): PlayerGraphicsComponent =
   new result 
   result.renderer = ren
+  result.color = color
 
-method render(this: PlayerGraphicsComponent, e: Entity, lag: float) = 
-  var toDraw = rect((cint)e.x, (cint)e.y, 50, 50)
+method render(this: PlayerGraphicsComponent, e: Entity, 
+    game: Game, lag: float) = 
+  var (screenX, screenY) = game.camera.getScreenLocation((e.x, e.y))
+
+  var toDraw = rect(screenX, screenY, 50, 50)
   var r, g, b, a: uint8
   this.renderer.getDrawColor(r, g, b, a)
-  this.renderer.setDrawColor(255, 0, 0)
+  this.renderer.setDrawColor(this.color.r, this.color.g, this.color.b)
 
   this.renderer.fillRect(toDraw)
 
   this.renderer.setDrawColor(r, g, b, a)
+
+#=> AIPhysicsComponent
+proc newAIPhysicsComponent(): AIPhysicsComponent =
+  new result
+
+method update(this: AIPhysicsComponent, e: var Entity, 
+    game: Game, dt: float) =
+  discard
   
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -145,9 +200,9 @@ proc newEntityManager(g: Game): EntityManager =
 proc add(em: var EntityManager, e: Entity) =
   em.entities.add(e)
 
-proc render(em: EntityManager, lag: float) =
+proc render(em: EntityManager, game: Game, lag: float) =
   for e in em.entities: 
-    e.graphics.render(e, lag)
+    e.graphics.render(e, game, lag)
 
 proc update(em: var EntityManager, dt: float) =
   for e in em.entities.mitems: 
@@ -159,9 +214,9 @@ proc render*(game: Game, lag: float) =
   ## This causes the game to render itself to the specified renderer
   game.renderer.clear()
 
-  game.renderer.copy(game.background, nil, nil)
+  #game.renderer.copy(game.background, nil, nil)
 
-  game.em.render(lag)
+  game.em.render(game, lag)
 
   game.renderer.present()
 
@@ -233,19 +288,31 @@ proc quit*(game: Game) =
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-proc newGame*(ren: RendererPtr): Game = 
+proc newGame*(ren: RendererPtr, size: (cint, cint)): Game = 
   new result 
   result.renderer = ren
   result.background = ren.loadTexture(getAppDir() / "res/img/bg.jpg")
   result.em = newEntityManager(result)
+  result.camera = newCamera(size[0], size[1])
+
+  randomize(epochTime().int)
   
   discard result.renderer.setDrawColor(110, 132, 174)
 
   result.player = newEntity(
     newPlayerPhysicsComponent(), 
-    newPlayerGraphicsComponent(result.renderer)
+    newPlayerGraphicsComponent(result.renderer),
+    "player"
   )
-  result.player.velocity = 10
   result.player.w = 50
   result.player.h = 50
   result.em.add(result.player)
+  
+  #Test
+  var test = newEntity(
+    newAIPhysicsComponent(),
+    newPlayerGraphicsComponent(result.renderer, (255.uint8, 255.uint8, 0.uint8))
+  )
+  test.x = 200
+  test.y = 200
+  result.em.add(test)
