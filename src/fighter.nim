@@ -55,9 +55,7 @@ proc main =
   sdlFailIf renderer.isNil: "Renderer could not be created"
   defer: renderer.destroy()
 
-  var game = newGame(renderer, (windowWidth, windowHeight))
-  game.quitCallback = exit
-  game.setFullscreen = proc (f: bool, ftype: FullscreenType) = 
+  let fullscreenFn = proc (f: bool, ftype: FullscreenType) = 
     var flag: uint32
 
     case ftype:
@@ -69,6 +67,8 @@ proc main =
       flag = SDL_WINDOW_FULLSCREEN
 
     discard window.setFullscreen(flag)
+
+  var game = newGame(renderer, (windowWidth, windowHeight), fullscreenFn, exit)
   defer: game.quit()
 
   var previous = epochTime()

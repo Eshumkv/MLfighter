@@ -62,9 +62,10 @@ type
     player: Entity
     camera: Camera2D
     commands: array[Command, (bool, bool)] # (pressed, repeat)
-    setFullscreen*: (proc (isFullscreen: bool, ftype: FullscreenType): void)
+    setFullscreen: (proc (isFullscreen: bool, ftype: FullscreenType): void)
     isFullscreen: bool
-    quitCallback*: (proc (): void)
+    quitCallback: (proc (): void)
+    world: World
     
   Camera2D = ref CameraObj
   CameraObj = object 
@@ -72,6 +73,9 @@ type
     y: int
     halfWidth: int
     halfHeight: int
+
+  World = ref WorldObj
+  WorldObj = object 
 
   EntityManager = ref EntityManagerObj
   EntityManagerObj = object
@@ -288,12 +292,14 @@ proc quit*(game: Game) =
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-proc newGame*(ren: RendererPtr, size: (cint, cint)): Game = 
+proc newGame*(ren: RendererPtr, size: (cint, cint), fullscreenFn: (proc (isFullscreen: bool, ftype: FullscreenType): void), exitFn: (proc())): Game = 
   new result 
   result.renderer = ren
   result.background = ren.loadTexture(getAppDir() / "res/img/bg.jpg")
   result.em = newEntityManager(result)
   result.camera = newCamera(size[0], size[1])
+  result.setFullscreen = fullscreenFn
+  result.quitCallback = exitFn
 
   randomize(epochTime().int)
   
