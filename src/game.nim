@@ -5,7 +5,8 @@ import
   sdl2.image,
   sequtils,
   math,
-  random
+  random,
+  algorithm
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -41,6 +42,11 @@ type
     color: Color
   
   AIPhysicsComponent = ref object of PhysicsComponent
+  
+  TextureGraphicsComponent = ref object of GraphicsComponent
+    renderer: RendererPtr
+    texture: TexturePtr
+    destRect: Rect
 
 type
   Entity = ref EntityObj
@@ -48,15 +54,15 @@ type
     velocity: float
     x, y: float
     w, h: int
+    z: int
     physics: PhysicsComponent
-    graphics: PlayerGraphicsComponent
+    graphics: GraphicsComponent
     name: string
 
 type 
   Game* = ref GameObj
   GameObj = object 
     renderer: RendererPtr
-    background: TexturePtr
     dt: float
     em: EntityManager
     player: Entity
@@ -65,7 +71,6 @@ type
     setFullscreen: (proc (isFullscreen: bool, ftype: FullscreenType): void)
     isFullscreen: bool
     quitCallback: (proc (): void)
-    world: World
     
   Camera2D = ref CameraObj
   CameraObj = object 
@@ -73,9 +78,6 @@ type
     y: int
     halfWidth: int
     halfHeight: int
-
-  World = ref WorldObj
-  WorldObj = object 
 
   EntityManager = ref EntityManagerObj
   EntityManagerObj = object
@@ -99,7 +101,7 @@ proc newCamera(w, h: int): Camera2D =
   result.halfWidth = w div 2
   result.halfHeight = h div 2
 
-proc getScreenLocation(camera: Camera2D, location: (float, float)): (cint, cint) = 
+proc getScreenLocation[T](camera: Camera2D, location: (T, T)): (cint, cint) = 
   var 
     screenX = (location[0].int - camera.x) + camera.halfWidth
     screenY = (location[1].int - camera.y) + camera.halfHeight
@@ -109,14 +111,23 @@ proc getScreenLocation(camera: Camera2D, location: (float, float)): (cint, cint)
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 #=> Entity
-proc newEntity*(p: PhysicsComponent, g: PlayerGraphicsComponent, name: string = nil): Entity = 
+proc newEntity*[T](p: PhysicsComponent, 
+    g: GraphicsComponent, 
+    location: (T, T) = (0, 0),
+    zIndex: int = 1,
+    name: string = nil): Entity = 
   new result
   result.physics = p
   result.graphics = g
   result.velocity = 100
+  result.x = location[0].float
+  result.y = location[1].float
+  result.w = 50
+  result.h = 50
+  result.z = zIndex
 
   if name == nil:
-    result.name = "entity" & $random(int.high)
+    result.name = "entity" & $random(0.high)
   else:
     result.name = name
 
@@ -174,9 +185,9 @@ proc newPlayerGraphicsComponent(ren: RendererPtr): PlayerGraphicsComponent =
 
 method render(this: PlayerGraphicsComponent, e: Entity, 
     game: Game, lag: float) = 
-  var (screenX, screenY) = game.camera.getScreenLocation((e.x, e.y))
+  let (screenX, screenY) = game.camera.getScreenLocation((e.x, e.y))
 
-  var toDraw = rect(screenX, screenY, 50, 50)
+  var toDraw = rect(screenX, screenY, e.w.cint, e.h.cint)
   var r, g, b, a: uint8
   this.renderer.getDrawColor(r, g, b, a)
   this.renderer.setDrawColor(this.color.r, this.color.g, this.color.b)
@@ -192,6 +203,21 @@ proc newAIPhysicsComponent(): AIPhysicsComponent =
 method update(this: AIPhysicsComponent, e: var Entity, 
     game: Game, dt: float) =
   discard
+
+#=> TextureGraphicsComponent
+proc newTextureGraphicsComponent(ren: RendererPtr, 
+    texture: TexturePtr, dest: Rect): TextureGraphicsComponent =
+  new result 
+  result.renderer = ren
+  result.texture = texture
+  result.destRect = dest
+
+method render(this: TextureGraphicsComponent, e: Entity, 
+    game: Game, lag: float) = 
+  let (screenX, screenY) = 
+    game.camera.getScreenLocation((this.destRect.x, this.destRect.y))
+  let dest = rect(screenX, screenY, this.destRect.w, this.destRect.h)
+  this.renderer.copy(this.texture, nil, unsafeaddr dest)
   
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -203,6 +229,7 @@ proc newEntityManager(g: Game): EntityManager =
 
 proc add(em: var EntityManager, e: Entity) =
   em.entities.add(e)
+  em.entities = em.entities.sortedByIt it.z
 
 proc render(em: EntityManager, game: Game, lag: float) =
   for e in em.entities: 
@@ -217,8 +244,6 @@ proc update(em: var EntityManager, dt: float) =
 proc render*(game: Game, lag: float) = 
   ## This causes the game to render itself to the specified renderer
   game.renderer.clear()
-
-  #game.renderer.copy(game.background, nil, nil)
 
   game.em.render(game, lag)
 
@@ -287,38 +312,45 @@ proc update*(game: var Game, elapsed: float) =
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 proc quit*(game: Game) = 
-  game.background.destroy()
   game.renderer.destroy()
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 proc newGame*(ren: RendererPtr, size: (cint, cint), fullscreenFn: (proc (isFullscreen: bool, ftype: FullscreenType): void), exitFn: (proc())): Game = 
+  let appDir = getAppDir()
+
   new result 
   result.renderer = ren
-  result.background = ren.loadTexture(getAppDir() / "res/img/bg.jpg")
   result.em = newEntityManager(result)
   result.camera = newCamera(size[0], size[1])
   result.setFullscreen = fullscreenFn
   result.quitCallback = exitFn
 
-  randomize(epochTime().int)
+  randomize epochTime().int 
   
   discard result.renderer.setDrawColor(110, 132, 174)
 
   result.player = newEntity(
     newPlayerPhysicsComponent(), 
     newPlayerGraphicsComponent(result.renderer),
+    (0, 0),
+    1,
     "player"
   )
-  result.player.w = 50
-  result.player.h = 50
+
   result.em.add(result.player)
-  
-  #Test
-  var test = newEntity(
+  result.em.add(newEntity(
     newAIPhysicsComponent(),
-    newPlayerGraphicsComponent(result.renderer)
-  )
-  test.x = 200
-  test.y = 200
-  result.em.add(test)
+    newPlayerGraphicsComponent(result.renderer),
+    (200, 200)
+  ))
+  
+  result.em.add(newEntity(
+    newAIPhysicsComponent(),
+    newTextureGraphicsComponent(
+      result.renderer, 
+      ren.loadTexture(appDir / "res/img/bg.jpg"), 
+      rect(0, 0, 500, 500)),
+    (200, 200),
+    -1
+  ))
