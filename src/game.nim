@@ -19,7 +19,8 @@ type
     Left,
     Up, 
     Right, 
-    Down
+    Down,
+    SpeedUp
     
   FullscreenType* {.pure.} = enum
     Windowed,
@@ -42,6 +43,8 @@ type
     color: Color
   
   AIPhysicsComponent = ref object of PhysicsComponent
+
+  BoundingBoxPhysicsComponent = ref object of PhysicsComponent
   
   TextureGraphicsComponent = ref object of GraphicsComponent
     renderer: RendererPtr
@@ -55,6 +58,7 @@ type
     x, y: float
     w, h: int
     z: int
+    rect: Rect
     physics: PhysicsComponent
     graphics: GraphicsComponent
     name: string
@@ -113,6 +117,7 @@ proc getScreenLocation[T](camera: Camera2D, location: (T, T)): (cint, cint) =
 #=> Entity
 proc newEntity*[T](p: PhysicsComponent, 
     g: GraphicsComponent, 
+    size: (T, T) = (50, 50),
     location: (T, T) = (0, 0),
     zIndex: int = 1,
     name: string = nil): Entity = 
@@ -122,9 +127,10 @@ proc newEntity*[T](p: PhysicsComponent,
   result.velocity = 100
   result.x = location[0].float
   result.y = location[1].float
-  result.w = 50
-  result.h = 50
+  result.w = size[0].int
+  result.h = size[1].int
   result.z = zIndex
+  result.rect = rect(result.x.cint, result.y.cint, result.w.cint, result.h.cint)
 
   if name == nil:
     result.name = "entity" & $random(0.high)
@@ -165,6 +171,12 @@ proc newPlayerPhysicsComponent(): PlayerPhysicsComponent =
 
 method update(this: PlayerPhysicsComponent, e: var Entity, 
     game: Game, dt: float) =
+
+  if game.isCommand(Command.SpeedUp):
+    e.velocity = 800
+  else:
+    e.velocity = 100
+
   if game.isCommand(Command.Left):
     e.moveLeft(dt)
   elif game.isCommand(Command.Right):
@@ -203,6 +215,37 @@ proc newAIPhysicsComponent(): AIPhysicsComponent =
 method update(this: AIPhysicsComponent, e: var Entity, 
     game: Game, dt: float) =
   discard
+
+#=> BoundingBoxPhysicsComponent
+proc newBoundingBoxPhysicsComponent(): BoundingBoxPhysicsComponent =
+  new result
+
+method update(this: BoundingBoxPhysicsComponent, e: var Entity, 
+    game: Game, dt: float) =
+  let this_bounds = (
+    right: (e.x.int + e.w).cint,
+    left: e.x.cint,
+    top: e.y.cint,
+    bottom: (e.y + e.h.float).cint
+  )
+
+  for entity in game.em.entities.mitems:
+    let entity_bounds = (
+      right: (entity.x.int + entity.w).cint,
+      left: entity.x.cint,
+      top: entity.y.cint,
+      bottom: (entity.y + entity.h.float).cint
+    )
+    
+    if entity_bounds.left <= this_bounds.left: 
+      entity.x = e.x 
+    elif entity_bounds.right >= this_bounds.right:
+      entity.x = e.x + (this_bounds.right - entity.w).float
+    
+    if entity_bounds.top <= this_bounds.top:
+      entity.y = e.y
+    elif entity_bounds.bottom >= this_bounds.bottom:
+      entity.y = e.y + (this_bounds.bottom - entity.h).float
 
 #=> TextureGraphicsComponent
 proc newTextureGraphicsComponent(ren: RendererPtr, 
@@ -263,6 +306,8 @@ proc toCommand(key: cint): Command =
     result = Command.Right
   of K_Space:
     result = Command.Shoot
+  of K_LSHIFT:
+    result = Command.SpeedUp
   else:
     result = Command.None
 
@@ -333,6 +378,7 @@ proc newGame*(ren: RendererPtr, size: (cint, cint), fullscreenFn: (proc (isFulls
   result.player = newEntity(
     newPlayerPhysicsComponent(), 
     newPlayerGraphicsComponent(result.renderer),
+    (50, 50),
     (0, 0),
     1,
     "player"
@@ -342,15 +388,17 @@ proc newGame*(ren: RendererPtr, size: (cint, cint), fullscreenFn: (proc (isFulls
   result.em.add(newEntity(
     newAIPhysicsComponent(),
     newPlayerGraphicsComponent(result.renderer),
+    (50, 50),
     (200, 200)
   ))
   
   result.em.add(newEntity(
-    newAIPhysicsComponent(),
+    newBoundingBoxPhysicsComponent(),
     newTextureGraphicsComponent(
       result.renderer, 
       ren.loadTexture(appDir / "res/img/bg.jpg"), 
-      rect(0, 0, 500, 500)),
-    (200, 200),
+      rect(-10, -10, 500, 500)),
+    (500, 500),
+    (-10, -10),
     -1
   ))
