@@ -65,6 +65,7 @@ after build:
 
 task clean, "Remove all unneeded files and clean the project":
   rmDir(nimcacheDir())
+  rmFile "nimsuggest.log"
 
 task run, "Run the binary":
   exec(bin[0].toExe.toBin)
