@@ -40,6 +40,7 @@ type
     isFullscreen: bool
     quitCallback: (proc (): void)
     next_scene: (proc (game: GameObj): GameObj)
+    mouse*: MouseState
     
   Camera2D* = ref CameraObj
   CameraObj* = object 
@@ -47,6 +48,14 @@ type
     y*: int
     halfWidth: int
     halfHeight: int
+  
+  MouseState* = object 
+    left*: bool
+    middle*: bool
+    right*: bool
+    x1*: bool
+    x2*: bool
+    x*, y*: int
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -55,6 +64,17 @@ proc is_command_pressed*(game: GameObj, command: Command): bool =
 
 proc is_command*(game: GameObj, command: Command): bool = 
   return game.commands[command] 
+
+proc is_any_key*(game: GameObj): bool =
+  for pressed in game.commands:
+    if pressed:
+      return true
+
+  let m = game.mouse
+  if m.left or m.middle or m.right or m.x1 or m.x2:
+    return true
+  
+  return false
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -72,10 +92,11 @@ proc get_screen_location*[T](camera: Camera2D, location: (T, T)): (cint, cint) =
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-proc change_scene*(game: var GameObj, clear_entities: bool, scene: (proc (game: GameObj): GameObj)) =
+proc change_scene*(game: GameObj, clear_entities: bool, scene: (proc (game: GameObj): GameObj)): GameObj =
+  result = game
   if clear_entities:
-    game.em.entities = @[]
-  game.next_scene = scene
+    result.em.entities = @[]
+  result.next_scene = scene
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -148,6 +169,37 @@ proc processInput*(game: GameObj): GameObj =
         result = result.processSystemCommand(command)
     of KeyUp:
       result.commands[event.key.keysym.sym.toCommand] = false
+    of MouseMotion:
+      result.mouse.x = event.motion.x
+      result.mouse.y = event.motion.y
+    of MouseButtonDown:
+      case event.button.button:
+      of BUTTON_LEFT:
+        result.mouse.left = true
+      of BUTTON_MIDDLE:
+        result.mouse.middle = true
+      of BUTTON_RIGHT:
+        result.mouse.right = true
+      of BUTTON_X1:
+        result.mouse.x1 = true
+      of BUTTON_X2:
+        result.mouse.x2 = true
+      else: 
+        discard
+    of MouseButtonup:
+      case event.button.button:
+      of BUTTON_LEFT:
+        result.mouse.left = false
+      of BUTTON_MIDDLE:
+        result.mouse.middle = false
+      of BUTTON_RIGHT:
+        result.mouse.right = false
+      of BUTTON_X1:
+        result.mouse.x1 = false
+      of BUTTON_X2:
+        result.mouse.x2 = false
+      else: 
+        discard
     else:
       discard
 
@@ -155,7 +207,7 @@ proc processInput*(game: GameObj): GameObj =
 
 proc update*(game: GameObj, elapsed: float): GameObj = 
   result = systems.player_input_update(game, elapsed)
-  systems.general_update(result, elapsed)
+  result = systems.general_update(result, elapsed)
   result = systems.camera_update(result, elapsed)
 
   if result.next_scene != nil:

@@ -2,11 +2,7 @@ import
   ecs,
   game
 
-type 
-  AABB* = ref object of Component
-    x*, y*: int
-    w*, h*: int
-  
+type   
   ColorComponent* = ref object of Component
     r*, g*, b*: uint8
 
@@ -17,21 +13,18 @@ type
   StaticScreenComponent* = ref object of Component
 
   AnyInputOrWaitComponent* = ref object of Component
-    ms*: float
+    sec*: float
     elapsed*: float
-    is_timer*: bool
-    callback*: (proc (this: AnyInputOrWaitComponent, game: var GameObj): void)
+    callback*: (proc (this: AnyInputOrWaitComponent, game: GameObj): GameObj)
+
+  FadeComponent* = ref object of Component
+    sec*: float
+    elapsed*: float
+    callback*: (proc (game: GameObj, entity: Entity): GameObj)
 
   Dummy* = ref object of Component
 
 proc newDummy*(): Dummy = new result
-
-proc newAABB*(x, y, w, h: int): AABB =
-  new result
-  result.x = x
-  result.y = y 
-  result.w = w
-  result.h = h
 
 proc newColorComponent*(r, g, b: uint8): ColorComponent =
   new result
@@ -49,9 +42,18 @@ proc newCameraFollowComponent*(): CameraFollowComponent =
 proc newStaticScreenComponent*(): StaticScreenComponent = 
   new result
 
-proc newAnyInputOrWaitComponent*(ms: float, is_timer: bool, cb: (proc (this: AnyInputOrWaitComponent, game: var GameObj): void)): AnyInputOrWaitComponent = 
+proc newAnyInputOrWaitComponent*(
+    sec: float, 
+    cb: (proc (this: AnyInputOrWaitComponent, game: GameObj): GameObj)
+    ): AnyInputOrWaitComponent = 
   new result
-  result.ms = ms
+  result.sec = sec
   result.elapsed = 0f
   result.callback = cb
-  result.is_timer = is_timer
+
+proc newFadeComponent*(sec: float, 
+    cb: (proc (game: GameObj, entity: Entity): GameObj)): FadeComponent = 
+  new result
+  result.sec = sec
+  result.callback = cb
+

@@ -14,12 +14,14 @@ type
   Entity* = ref EntityObj
   EntityObj* = object
     id*: string
+    x*, y*: int
+    w*, h*: int
+    z*: int
     components: Table[string, Component]
 
   EntityManager* = ref EntityManagerObj
   EntityManagerObj* = object
     entities*: seq[Entity]
-
     
 proc typename*[T](sym: T): string = 
   sym.type.name
@@ -30,9 +32,14 @@ proc type_to_string*(t: typedesc): string =
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 #=> Entity
-proc newEntity*(name: string = nil): Entity = 
+proc newEntity*(x, y, w, h: int, z: int = 0, name: string = nil): Entity = 
   new result
   result.components = initTable[string, Component]()
+  result.x = x
+  result.y = y
+  result.w = w
+  result.h = h
+  result.z = z
 
   if name == nil:
     result.id = "entity" & $random(0.high)
@@ -40,9 +47,8 @@ proc newEntity*(name: string = nil): Entity =
     result.id = name
 
 proc add*[T: Component](this: Entity, component: T): Entity =
-  let name = component.typename
-  this.components[name] = component
-  this
+  result = this
+  result.components[component.typename] = component
 
 proc remove*(this: Entity, comp_type: typedesc) =
   let name = comp_type.name
@@ -84,7 +90,7 @@ proc newEntityManager*(): EntityManager =
 
 proc add*(em: var EntityManager, e: Entity) =
   em.entities.add(e)
-  # em.entities = em.entities.sortedByIt it.z
+  em.entities = em.entities.sortedByIt it.z
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
