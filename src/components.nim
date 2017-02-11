@@ -1,4 +1,6 @@
-import ecs
+import 
+  ecs,
+  game
 
 type 
   AABB* = ref object of Component
@@ -17,6 +19,8 @@ type
   AnyInputOrWaitComponent* = ref object of Component
     ms*: float
     elapsed*: float
+    is_timer*: bool
+    callback*: (proc (this: AnyInputOrWaitComponent, game: var GameObj): void)
 
   Dummy* = ref object of Component
 
@@ -45,7 +49,9 @@ proc newCameraFollowComponent*(): CameraFollowComponent =
 proc newStaticScreenComponent*(): StaticScreenComponent = 
   new result
 
-proc newAnyInputOrWaitComponent*(ms: float): AnyInputOrWaitComponent = 
+proc newAnyInputOrWaitComponent*(ms: float, is_timer: bool, cb: (proc (this: AnyInputOrWaitComponent, game: var GameObj): void)): AnyInputOrWaitComponent = 
   new result
   result.ms = ms
   result.elapsed = 0f
+  result.callback = cb
+  result.is_timer = is_timer

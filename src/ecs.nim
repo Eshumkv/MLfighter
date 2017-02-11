@@ -44,6 +44,11 @@ proc add*[T: Component](this: Entity, component: T): Entity =
   this.components[name] = component
   this
 
+proc remove*(this: Entity, comp_type: typedesc) =
+  let name = comp_type.name
+  if this.components.contains(name):
+    this.components.del(name)
+
 proc get*[T: Component](this: Entity, component_type: typedesc[T]): T = 
   T(this.components[component_type.name])
 

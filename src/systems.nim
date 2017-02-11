@@ -17,7 +17,7 @@ proc render*(game: GameObj, lag: float) =
 
       # If the entity does not conform to the camera
       (screenX, screenY) = 
-        if entity.has(StaticScreenComponent): 
+        if not entity.has(StaticScreenComponent): 
           game.camera.get_screen_location((aabb.x, aabb.y))
         else: 
           (aabb.x.cint, aabb.y.cint)
@@ -94,13 +94,18 @@ proc camera_update*(game: GameObj, dt: float): GameObj =
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 #=> General Update System
-proc general_update*(game: GameObj, dt: float): GameObj =
-  result = game
-  for entity in result.em.entities:
+proc general_update*(game: var GameObj, dt: float) =
+  for entity in game.em.entities:
     if entity.has(AnyInputOrWaitComponent):
       var comp = entity.get(AnyInputOrWaitComponent)
+
       comp.elapsed += dt
-      if comp.elapsed >= comp.ms or game.is_command(Command.None):
-        echo "Yay"
-        comp.elapsed = 0
+
+      if comp.elapsed >= comp.ms or game.is_command_pressed(Command.None):
+        comp.callback(comp, game)
+        if comp.is_timer:
+          comp.elapsed = 0
+        else:
+          entity.remove(AnyInputOrWaitComponent)
+    # else:
 

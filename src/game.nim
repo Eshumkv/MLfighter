@@ -6,8 +6,7 @@ import
   sequtils,
   math,
   random,
-  ecs,
-  components
+  ecs
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -35,10 +34,12 @@ type
     em*: EntityManager
     player: Entity # TODO: remove
     camera*: Camera2D
-    commands: array[Command, (bool, bool)] # (pressed, repeat)
+    commands: array[Command, bool]
+    last_commands: array[Command, bool]
     setFullscreen: (proc (isFullscreen: bool, ftype: FullscreenType): void)
     isFullscreen: bool
     quitCallback: (proc (): void)
+    next_scene: (proc (game: GameObj): GameObj)
     
   Camera2D* = ref CameraObj
   CameraObj* = object 
@@ -49,14 +50,11 @@ type
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-# TODO: Fix this. This just doesn't work
 proc is_command_pressed*(game: GameObj, command: Command): bool = 
-  let (pressed, repeat) = game.commands[command]
-  return pressed and not repeat
+  return game.commands[command] and not game.last_commands[command]
 
 proc is_command*(game: GameObj, command: Command): bool = 
-  let (pressed, _) = game.commands[command]
-  return pressed
+  return game.commands[command] 
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -74,18 +72,26 @@ proc get_screen_location*[T](camera: Camera2D, location: (T, T)): (cint, cint) =
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
+proc change_scene*(game: var GameObj, clear_entities: bool, scene: (proc (game: GameObj): GameObj)) =
+  if clear_entities:
+    game.em.entities = @[]
+  game.next_scene = scene
+
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+import 
+  components
 from systems import nil
 from scenes import nil
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 proc render*(game: GameObj, lag: float) = 
-  ## This causes the game to render itself to the specified renderer
   game.renderer.clear()
-
   systems.render(game, lag)
-
   game.renderer.present()
+
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 proc toCommand(key: cint): Command = 
   case key:
@@ -124,6 +130,7 @@ proc processSystemCommand(game: GameObj, command: Command): GameObj =
 
 proc processInput*(game: GameObj): GameObj = 
   result = game
+  result.last_commands = game.commands
   var event = defaultEvent 
 
   while pollEvent(event):
@@ -136,11 +143,11 @@ proc processInput*(game: GameObj): GameObj =
         echo "Trying to quit :("
     of KeyDown:
       let command = event.key.keysym.sym.toCommand
-      result.commands[command] = (true, event.key.repeat)
+      result.commands[command] = true
       if not event.key.repeat:
         result = result.processSystemCommand(command)
     of KeyUp:
-      result.commands[event.key.keysym.sym.toCommand] = (false, false)
+      result.commands[event.key.keysym.sym.toCommand] = false
     else:
       discard
 
@@ -148,8 +155,12 @@ proc processInput*(game: GameObj): GameObj =
 
 proc update*(game: GameObj, elapsed: float): GameObj = 
   result = systems.player_input_update(game, elapsed)
-  result = systems.general_update(game, elapsed)
+  systems.general_update(result, elapsed)
   result = systems.camera_update(result, elapsed)
+
+  if result.next_scene != nil:
+    result = result.next_scene(result)
+    result.next_scene = nil
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -169,6 +180,7 @@ proc newGame*(ren: RendererPtr, size: (cint, cint), fullscreenFn: (proc (isFulls
   
   discard result.renderer.setDrawColor(110, 132, 174)
 
+  # Set default scene
   result = scenes.intro(result)
   
   # let appDir = getAppDir()
