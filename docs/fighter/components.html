@@ -14,7 +14,7 @@
 <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro:400,500,600' rel='stylesheet' type='text/css'/>
 
 <!-- CSS -->
-<title>Module game</title>
+<title>Module components</title>
 <style type="text/css" >
 /*
 Stylesheet for use with Docutils/rst2html.
@@ -1193,7 +1193,7 @@ function main() {
 <body onload="main()">
 <div class="document" id="documentId">
   <div class="container">
-    <h1 class="title">Module game</h1>
+    <h1 class="title">Module components</h1>
     <div class="row">
   <div class="three columns">
   <div>
@@ -1217,70 +1217,49 @@ function main() {
 <li>
   <a class="reference reference-toplevel" href="#7" id="57">Types</a>
   <ul class="simple simple-toc-section">
-      <li><a class="reference" href="#Command"
-    title="Command = enum
-  None, Fullscreen, Shoot, Left, Up, Right, Down, SpeedUp"><wbr />Command<span class="attachedType" style="visibility:hidden"></span></a></li>
-  <li><a class="reference" href="#FullscreenType"
-    title="FullscreenType = enum
-  Windowed, Fullscreen, Desktop"><wbr />Fullscreen<wbr />Type<span class="attachedType" style="visibility:hidden"></span></a></li>
-  <li><a class="reference" href="#GameObj"
-    title="GameObj = object
-  renderer*: RendererPtr
-  em*: EntityManager
-  player: Entity
-  camera*: Camera2D
-  commands: array[Command, bool]
-  last_commands: array[Command, bool]
-  setFullscreen: (proc (isFullscreen: bool; ftype: FullscreenType): void)
-  isFullscreen: bool
-  quitCallback: (proc (): void)
-  next_scene: (proc (game: GameObj): GameObj)
-  mouse*: MouseState"><wbr />Game<wbr />Obj<span class="attachedType" style="visibility:hidden"></span></a></li>
-  <li><a class="reference" href="#Camera2D"
-    title="Camera2D = ref CameraObj"><wbr />Camera2D<span class="attachedType" style="visibility:hidden"></span></a></li>
-  <li><a class="reference" href="#CameraObj"
-    title="CameraObj = object
-  x*: int
-  y*: int
-  halfWidth: int
-  halfHeight: int"><wbr />Camera<wbr />Obj<span class="attachedType" style="visibility:hidden"></span></a></li>
-  <li><a class="reference" href="#MouseState"
-    title="MouseState = object
-  left*: bool
-  middle*: bool
-  right*: bool
-  x1*: bool
-  x2*: bool
-  x*, y*: int"><wbr />Mouse<wbr />State<span class="attachedType" style="visibility:hidden"></span></a></li>
+      <li><a class="reference" href="#ColorComponent"
+    title="ColorComponent = ref object of Component
+  r*, g*, b*: uint8"><wbr />Color<wbr />Component<span class="attachedType" style="visibility:hidden"></span></a></li>
+  <li><a class="reference" href="#PlayerInputComponent"
+    title="PlayerInputComponent = ref object of Component
+  velocity*: float"><wbr />Player<wbr />Input<wbr />Component<span class="attachedType" style="visibility:hidden"></span></a></li>
+  <li><a class="reference" href="#CameraFollowComponent"
+    title="CameraFollowComponent = ref object of Component"><wbr />Camera<wbr />Follow<wbr />Component<span class="attachedType" style="visibility:hidden"></span></a></li>
+  <li><a class="reference" href="#StaticScreenComponent"
+    title="StaticScreenComponent = ref object of Component"><wbr />Static<wbr />Screen<wbr />Component<span class="attachedType" style="visibility:hidden"></span></a></li>
+  <li><a class="reference" href="#AnyInputOrWaitComponent"
+    title="AnyInputOrWaitComponent = ref object of Component
+  sec*: float
+  elapsed*: float
+  callback*: (proc (this: AnyInputOrWaitComponent; game: GameObj): GameObj)"><wbr />Any<wbr />Input<wbr />Or<wbr />Wait<wbr />Component<span class="attachedType" style="visibility:hidden"></span></a></li>
+  <li><a class="reference" href="#FadeComponent"
+    title="FadeComponent = ref object of Component
+  sec*: float
+  elapsed*: float
+  callback*: (proc (game: GameObj; entity: Entity): GameObj)"><wbr />Fade<wbr />Component<span class="attachedType" style="visibility:hidden"></span></a></li>
+  <li><a class="reference" href="#Dummy"
+    title="Dummy = ref object of Component"><wbr />Dummy<span class="attachedType" style="visibility:hidden"></span></a></li>
 
   </ul>
 </li>
 <li>
   <a class="reference reference-toplevel" href="#12" id="62">Procs</a>
   <ul class="simple simple-toc-section">
-      <li><a class="reference" href="#is_command_pressed,GameObj,Command"
-    title="is_command_pressed(game: GameObj; command: Command): bool"><wbr />is_<wbr />command_<wbr />pressed<span class="attachedType" style="visibility:hidden">GameObj</span></a></li>
-  <li><a class="reference" href="#is_command,GameObj,Command"
-    title="is_command(game: GameObj; command: Command): bool"><wbr />is_<wbr />command<span class="attachedType" style="visibility:hidden">GameObj</span></a></li>
-  <li><a class="reference" href="#is_any_key,GameObj"
-    title="is_any_key(game: GameObj): bool"><wbr />is_<wbr />any_<wbr />key<span class="attachedType" style="visibility:hidden">GameObj</span></a></li>
-  <li><a class="reference" href="#get_screen_location,Camera2D,"
-    title="get_screen_location[T](camera: Camera2D; location: (T, T)): (cint, cint)"><wbr />get_<wbr />screen_<wbr />location<span class="attachedType" style="visibility:hidden">Camera2D</span></a></li>
-  <li><a class="reference" href="#change_scene,GameObj,bool,"
-    title="change_scene(game: GameObj; clear_entities: bool;
-             scene: (proc (game: GameObj): GameObj)): GameObj"><wbr />change_<wbr />scene<span class="attachedType" style="visibility:hidden">GameObj</span></a></li>
-  <li><a class="reference" href="#render,GameObj,float"
-    title="render(game: GameObj; lag: float)"><wbr />render<span class="attachedType" style="visibility:hidden">GameObj</span></a></li>
-  <li><a class="reference" href="#processInput,GameObj"
-    title="processInput(game: GameObj): GameObj"><wbr />process<wbr />Input<span class="attachedType" style="visibility:hidden">GameObj</span></a></li>
-  <li><a class="reference" href="#update,GameObj,float"
-    title="update(game: GameObj; elapsed: float): GameObj"><wbr />update<span class="attachedType" style="visibility:hidden">GameObj</span></a></li>
-  <li><a class="reference" href="#quit,GameObj"
-    title="quit(game: GameObj)"><wbr />quit<span class="attachedType" style="visibility:hidden">GameObj</span></a></li>
-  <li><a class="reference" href="#newGame,RendererPtr,,,"
-    title="newGame(ren: RendererPtr; size: (cint, cint);
-        fullscreenFn: (proc (isFullscreen: bool; ftype: FullscreenType): void);
-        exitFn: (proc ())): GameObj"><wbr />new<wbr />Game<span class="attachedType" style="visibility:hidden">GameObj</span></a></li>
+      <li><a class="reference" href="#newDummy,"
+    title="newDummy(): Dummy"><wbr />new<wbr />Dummy<span class="attachedType" style="visibility:hidden">Dummy</span></a></li>
+  <li><a class="reference" href="#newColorComponent,uint8,uint8,uint8"
+    title="newColorComponent(r, g, b: uint8): ColorComponent"><wbr />new<wbr />Color<wbr />Component<span class="attachedType" style="visibility:hidden">ColorComponent</span></a></li>
+  <li><a class="reference" href="#newPlayerInputComponent,"
+    title="newPlayerInputComponent(): PlayerInputComponent"><wbr />new<wbr />Player<wbr />Input<wbr />Component<span class="attachedType" style="visibility:hidden">PlayerInputComponent</span></a></li>
+  <li><a class="reference" href="#newCameraFollowComponent,"
+    title="newCameraFollowComponent(): CameraFollowComponent"><wbr />new<wbr />Camera<wbr />Follow<wbr />Component<span class="attachedType" style="visibility:hidden">CameraFollowComponent</span></a></li>
+  <li><a class="reference" href="#newStaticScreenComponent,"
+    title="newStaticScreenComponent(): StaticScreenComponent"><wbr />new<wbr />Static<wbr />Screen<wbr />Component<span class="attachedType" style="visibility:hidden">StaticScreenComponent</span></a></li>
+  <li><a class="reference" href="#newAnyInputOrWaitComponent,float,"
+    title="newAnyInputOrWaitComponent(sec: float; cb: (
+    proc (this: AnyInputOrWaitComponent; game: GameObj): GameObj)): AnyInputOrWaitComponent"><wbr />new<wbr />Any<wbr />Input<wbr />Or<wbr />Wait<wbr />Component<span class="attachedType" style="visibility:hidden">AnyInputOrWaitComponent</span></a></li>
+  <li><a class="reference" href="#newFadeComponent,float,"
+    title="newFadeComponent(sec: float; cb: (proc (game: GameObj; entity: Entity): GameObj)): FadeComponent"><wbr />new<wbr />Fade<wbr />Component<span class="attachedType" style="visibility:hidden">FadeComponent</span></a></li>
 
   </ul>
 </li>
@@ -1294,89 +1273,84 @@ function main() {
   <div class="section" id="6">
 <h1><a class="toc-backref" href="#6">Imports</a></h1>
 <dl class="item">
-<a class="reference external" href="times.html">times</a>, <a class="reference external" href="os.html">os</a>, <a class="reference external" href="sdl2.html">sdl2</a>, <a class="reference external" href="sdl2/image.html">sdl2/image</a>, <a class="reference external" href="sequtils.html">sequtils</a>, <a class="reference external" href="math.html">math</a>, <a class="reference external" href="random.html">random</a>, <a class="reference external" href="ecs.html">ecs</a>, <a class="reference external" href="components.html">components</a>, <a class="reference external" href="systems.html">systems</a>, <a class="reference external" href="scenes.html">scenes</a>
+<a class="reference external" href="ecs.html">ecs</a>, <a class="reference external" href="game.html">game</a>
 </dl></div>
 <div class="section" id="7">
 <h1><a class="toc-backref" href="#7">Types</a></h1>
 <dl class="item">
-<dt id="Command"><a name="Command"></a><pre><span class="Identifier">Command</span> <span class="Other">=</span> <span class="Keyword">enum</span>
-  <span class="Identifier">None</span><span class="Other">,</span> <span class="Identifier">Fullscreen</span><span class="Other">,</span> <span class="Identifier">Shoot</span><span class="Other">,</span> <span class="Identifier">Left</span><span class="Other">,</span> <span class="Identifier">Up</span><span class="Other">,</span> <span class="Identifier">Right</span><span class="Other">,</span> <span class="Identifier">Down</span><span class="Other">,</span> <span class="Identifier">SpeedUp</span></pre></dt>
-<dd>
-
-&nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L15"
-class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L15" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<dt id="FullscreenType"><a name="FullscreenType"></a><pre><span class="Identifier">FullscreenType</span> <span class="Other">=</span> <span class="Keyword">enum</span>
-  <span class="Identifier">Windowed</span><span class="Other">,</span> <span class="Identifier">Fullscreen</span><span class="Other">,</span> <span class="Identifier">Desktop</span></pre></dt>
-<dd>
-
-&nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L25"
-class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L25" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<dt id="GameObj"><a name="GameObj"></a><pre><span class="Identifier">GameObj</span> <span class="Other">=</span> <span class="Keyword">object</span>
-  <span class="Identifier">renderer</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">RendererPtr</span>
-  <span class="Identifier">em</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">EntityManager</span>
-  <span class="Identifier">player</span><span class="Other">:</span> <span class="Identifier">Entity</span>
-  <span class="Identifier">camera</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Camera2D</span>
-  <span class="Identifier">commands</span><span class="Other">:</span> <span class="Identifier">array</span><span class="Other">[</span><span class="Identifier">Command</span><span class="Other">,</span> <span class="Identifier">bool</span><span class="Other">]</span>
-  <span class="Identifier">last_commands</span><span class="Other">:</span> <span class="Identifier">array</span><span class="Other">[</span><span class="Identifier">Command</span><span class="Other">,</span> <span class="Identifier">bool</span><span class="Other">]</span>
-  <span class="Identifier">setFullscreen</span><span class="Other">:</span> <span class="Other">(</span><span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">isFullscreen</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">;</span> <span class="Identifier">ftype</span><span class="Other">:</span> <span class="Identifier">FullscreenType</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">void</span><span class="Other">)</span>
-  <span class="Identifier">isFullscreen</span><span class="Other">:</span> <span class="Identifier">bool</span>
-  <span class="Identifier">quitCallback</span><span class="Other">:</span> <span class="Other">(</span><span class="Keyword">proc</span> <span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">void</span><span class="Other">)</span>
-  <span class="Identifier">next_scene</span><span class="Other">:</span> <span class="Other">(</span><span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">game</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">)</span>
-  <span class="Identifier">mouse</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">MouseState</span>
+<dt id="ColorComponent"><a name="ColorComponent"></a><pre><span class="Identifier">ColorComponent</span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">Component</span>
+  <span class="Identifier">r</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">g</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">b</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">uint8</span>
 </pre></dt>
 <dd>
 
 &nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L32"
+href="/tree/master/src/components.nim#L6"
 class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L32" class="link-seesrc" target="_blank" >Edit</a>
+<a href="/edit/devel/src/components.nim#L6" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<dt id="Camera2D"><a name="Camera2D"></a><pre><span class="Identifier">Camera2D</span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Identifier">CameraObj</span></pre></dt>
-<dd>
-
-&nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L45"
-class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L45" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<dt id="CameraObj"><a name="CameraObj"></a><pre><span class="Identifier">CameraObj</span> <span class="Other">=</span> <span class="Keyword">object</span>
-  <span class="Identifier">x</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
-  <span class="Identifier">y</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
-  <span class="Identifier">halfWidth</span><span class="Other">:</span> <span class="Identifier">int</span>
-  <span class="Identifier">halfHeight</span><span class="Other">:</span> <span class="Identifier">int</span>
+<dt id="PlayerInputComponent"><a name="PlayerInputComponent"></a><pre><span class="Identifier">PlayerInputComponent</span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">Component</span>
+  <span class="Identifier">velocity</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">float</span>
 </pre></dt>
 <dd>
 
 &nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L46"
+href="/tree/master/src/components.nim#L9"
 class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L46" class="link-seesrc" target="_blank" >Edit</a>
+<a href="/edit/devel/src/components.nim#L9" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<dt id="MouseState"><a name="MouseState"></a><pre><span class="Identifier">MouseState</span> <span class="Other">=</span> <span class="Keyword">object</span>
-  <span class="Identifier">left</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
-  <span class="Identifier">middle</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
-  <span class="Identifier">right</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
-  <span class="Identifier">x1</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
-  <span class="Identifier">x2</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
-  <span class="Identifier">x</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">y</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+<dt id="CameraFollowComponent"><a name="CameraFollowComponent"></a><pre><span class="Identifier">CameraFollowComponent</span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">Component</span></pre></dt>
+<dd>
+
+&nbsp;&nbsp;<a
+href="/tree/master/src/components.nim#L12"
+class="link-seesrc" target="_blank">Source</a>
+<a href="/edit/devel/src/components.nim#L12" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<dt id="StaticScreenComponent"><a name="StaticScreenComponent"></a><pre><span class="Identifier">StaticScreenComponent</span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">Component</span></pre></dt>
+<dd>
+
+&nbsp;&nbsp;<a
+href="/tree/master/src/components.nim#L13"
+class="link-seesrc" target="_blank">Source</a>
+<a href="/edit/devel/src/components.nim#L13" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<dt id="AnyInputOrWaitComponent"><a name="AnyInputOrWaitComponent"></a><pre><span class="Identifier">AnyInputOrWaitComponent</span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">Component</span>
+  <span class="Identifier">sec</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">float</span>
+  <span class="Identifier">elapsed</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">float</span>
+  <span class="Identifier">callback</span><span class="Operator">*</span><span class="Other">:</span> <span class="Other">(</span><span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">this</span><span class="Other">:</span> <span class="Identifier">AnyInputOrWaitComponent</span><span class="Other">;</span> <span class="Identifier">game</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">)</span>
 </pre></dt>
 <dd>
 
 &nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L52"
+href="/tree/master/src/components.nim#L15"
 class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L52" class="link-seesrc" target="_blank" >Edit</a>
+<a href="/edit/devel/src/components.nim#L15" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<dt id="FadeComponent"><a name="FadeComponent"></a><pre><span class="Identifier">FadeComponent</span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">Component</span>
+  <span class="Identifier">sec</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">float</span>
+  <span class="Identifier">elapsed</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">float</span>
+  <span class="Identifier">callback</span><span class="Operator">*</span><span class="Other">:</span> <span class="Other">(</span><span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">game</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">;</span> <span class="Identifier">entity</span><span class="Other">:</span> <span class="Identifier">Entity</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">)</span>
+</pre></dt>
+<dd>
+
+&nbsp;&nbsp;<a
+href="/tree/master/src/components.nim#L20"
+class="link-seesrc" target="_blank">Source</a>
+<a href="/edit/devel/src/components.nim#L20" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<dt id="Dummy"><a name="Dummy"></a><pre><span class="Identifier">Dummy</span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">Component</span></pre></dt>
+<dd>
+
+&nbsp;&nbsp;<a
+href="/tree/master/src/components.nim#L25"
+class="link-seesrc" target="_blank">Source</a>
+<a href="/edit/devel/src/components.nim#L25" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -1384,98 +1358,71 @@ class="link-seesrc" target="_blank">Source</a>
 <div class="section" id="12">
 <h1><a class="toc-backref" href="#12">Procs</a></h1>
 <dl class="item">
-<dt id="is_command_pressed"><a name="is_command_pressed,GameObj,Command"></a><pre><span class="Keyword">proc</span> <span class="Identifier">is_command_pressed</span><span class="Other">(</span><span class="Identifier">game</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">;</span> <span class="Identifier">command</span><span class="Other">:</span> <span class="Identifier">Command</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span class="Other pragmabegin">{.</span><div class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
+<dt id="newDummy"><a name="newDummy,"></a><pre><span class="Keyword">proc</span> <span class="Identifier">newDummy</span><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Dummy</span> <span class="Other pragmabegin">{.</span><div class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
 <dd>
 
 &nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L62"
+href="/tree/master/src/components.nim#L27"
 class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L62" class="link-seesrc" target="_blank" >Edit</a>
+<a href="/edit/devel/src/components.nim#L27" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<dt id="is_command"><a name="is_command,GameObj,Command"></a><pre><span class="Keyword">proc</span> <span class="Identifier">is_command</span><span class="Other">(</span><span class="Identifier">game</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">;</span> <span class="Identifier">command</span><span class="Other">:</span> <span class="Identifier">Command</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span class="Other pragmabegin">{.</span><div class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
+<dt id="newColorComponent"><a name="newColorComponent,uint8,uint8,uint8"></a><pre><span class="Keyword">proc</span> <span class="Identifier">newColorComponent</span><span class="Other">(</span><span class="Identifier">r</span><span class="Other">,</span> <span class="Identifier">g</span><span class="Other">,</span> <span class="Identifier">b</span><span class="Other">:</span> <span class="Identifier">uint8</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">ColorComponent</span> <span class="Other pragmabegin">{.</span><div class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
 <dd>
 
 &nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L65"
+href="/tree/master/src/components.nim#L29"
 class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L65" class="link-seesrc" target="_blank" >Edit</a>
+<a href="/edit/devel/src/components.nim#L29" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<dt id="is_any_key"><a name="is_any_key,GameObj"></a><pre><span class="Keyword">proc</span> <span class="Identifier">is_any_key</span><span class="Other">(</span><span class="Identifier">game</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span class="Other pragmabegin">{.</span><div class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
+<dt id="newPlayerInputComponent"><a name="newPlayerInputComponent,"></a><pre><span class="Keyword">proc</span> <span class="Identifier">newPlayerInputComponent</span><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">PlayerInputComponent</span> <span class="Other pragmabegin">{.</span><div class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
 <dd>
 
 &nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L68"
+href="/tree/master/src/components.nim#L35"
 class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L68" class="link-seesrc" target="_blank" >Edit</a>
+<a href="/edit/devel/src/components.nim#L35" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<dt id="get_screen_location"><a name="get_screen_location,Camera2D,"></a><pre><span class="Keyword">proc</span> <span class="Identifier">get_screen_location</span><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">camera</span><span class="Other">:</span> <span class="Identifier">Camera2D</span><span class="Other">;</span> <span class="Identifier">location</span><span class="Other">:</span> <span class="Other">(</span><span class="Identifier">T</span><span class="Other">,</span> <span class="Identifier">T</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Other">(</span><span class="Identifier">cint</span><span class="Other">,</span> <span class="Identifier">cint</span><span class="Other">)</span></pre></dt>
+<dt id="newCameraFollowComponent"><a name="newCameraFollowComponent,"></a><pre><span class="Keyword">proc</span> <span class="Identifier">newCameraFollowComponent</span><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">CameraFollowComponent</span> <span class="Other pragmabegin">{.</span><div class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
 <dd>
 
 &nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L86"
+href="/tree/master/src/components.nim#L39"
 class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L86" class="link-seesrc" target="_blank" >Edit</a>
+<a href="/edit/devel/src/components.nim#L39" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<dt id="change_scene"><a name="change_scene,GameObj,bool,"></a><pre><span class="Keyword">proc</span> <span class="Identifier">change_scene</span><span class="Other">(</span><span class="Identifier">game</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">;</span> <span class="Identifier">clear_entities</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">;</span>
-                 <span class="Identifier">scene</span><span class="Other">:</span> <span class="Other">(</span><span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">game</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">GameObj</span> <span class="Other pragmabegin">{.</span><div class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
+<dt id="newStaticScreenComponent"><a name="newStaticScreenComponent,"></a><pre><span class="Keyword">proc</span> <span class="Identifier">newStaticScreenComponent</span><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">StaticScreenComponent</span> <span class="Other pragmabegin">{.</span><div class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
 <dd>
 
 &nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L95"
+href="/tree/master/src/components.nim#L42"
 class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L95" class="link-seesrc" target="_blank" >Edit</a>
+<a href="/edit/devel/src/components.nim#L42" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<dt id="render"><a name="render,GameObj,float"></a><pre><span class="Keyword">proc</span> <span class="Identifier">render</span><span class="Other">(</span><span class="Identifier">game</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">;</span> <span class="Identifier">lag</span><span class="Other">:</span> <span class="Identifier">float</span><span class="Other">)</span> <span class="Other pragmabegin">{.</span><div class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
+<dt id="newAnyInputOrWaitComponent"><a name="newAnyInputOrWaitComponent,float,"></a><pre><span class="Keyword">proc</span> <span class="Identifier">newAnyInputOrWaitComponent</span><span class="Other">(</span><span class="Identifier">sec</span><span class="Other">:</span> <span class="Identifier">float</span><span class="Other">;</span> <span class="Identifier">cb</span><span class="Other">:</span> <span class="Other">(</span>
+    <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">this</span><span class="Other">:</span> <span class="Identifier">AnyInputOrWaitComponent</span><span class="Other">;</span> <span class="Identifier">game</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">AnyInputOrWaitComponent</span> <span class="Other pragmabegin">{.</span><div class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
 <dd>
 
 &nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L110"
+href="/tree/master/src/components.nim#L45"
 class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L110" class="link-seesrc" target="_blank" >Edit</a>
+<a href="/edit/devel/src/components.nim#L45" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<dt id="processInput"><a name="processInput,GameObj"></a><pre><span class="Keyword">proc</span> <span class="Identifier">processInput</span><span class="Other">(</span><span class="Identifier">game</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">GameObj</span> <span class="Other pragmabegin">{.</span><div class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
+<dt id="newFadeComponent"><a name="newFadeComponent,float,"></a><pre><span class="Keyword">proc</span> <span class="Identifier">newFadeComponent</span><span class="Other">(</span><span class="Identifier">sec</span><span class="Other">:</span> <span class="Identifier">float</span><span class="Other">;</span>
+                     <span class="Identifier">cb</span><span class="Other">:</span> <span class="Other">(</span><span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">game</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">;</span> <span class="Identifier">entity</span><span class="Other">:</span> <span class="Identifier">Entity</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">FadeComponent</span> <span class="Other pragmabegin">{.</span><div class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
 <dd>
 
 &nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L152"
+href="/tree/master/src/components.nim#L54"
 class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L152" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<dt id="update"><a name="update,GameObj,float"></a><pre><span class="Keyword">proc</span> <span class="Identifier">update</span><span class="Other">(</span><span class="Identifier">game</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">;</span> <span class="Identifier">elapsed</span><span class="Other">:</span> <span class="Identifier">float</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">GameObj</span> <span class="Other pragmabegin">{.</span><div class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
-<dd>
-
-&nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L208"
-class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L208" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<dt id="quit"><a name="quit,GameObj"></a><pre><span class="Keyword">proc</span> <span class="Identifier">quit</span><span class="Other">(</span><span class="Identifier">game</span><span class="Other">:</span> <span class="Identifier">GameObj</span><span class="Other">)</span> <span class="Other pragmabegin">{.</span><div class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
-<dd>
-
-&nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L219"
-class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L219" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<dt id="newGame"><a name="newGame,RendererPtr,,,"></a><pre><span class="Keyword">proc</span> <span class="Identifier">newGame</span><span class="Other">(</span><span class="Identifier">ren</span><span class="Other">:</span> <span class="Identifier">RendererPtr</span><span class="Other">;</span> <span class="Identifier">size</span><span class="Other">:</span> <span class="Other">(</span><span class="Identifier">cint</span><span class="Other">,</span> <span class="Identifier">cint</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">fullscreenFn</span><span class="Other">:</span> <span class="Other">(</span>
-    <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">isFullscreen</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">;</span> <span class="Identifier">ftype</span><span class="Other">:</span> <span class="Identifier">FullscreenType</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">void</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">exitFn</span><span class="Other">:</span> <span class="Other">(</span><span class="Keyword">proc</span> <span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">GameObj</span> <span class="Other pragmabegin">{.</span><div class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">TimeEffect</span><span class="Other">]</span></div><span class="Other pragmaend">.}</span></pre></dt>
-<dd>
-
-&nbsp;&nbsp;<a
-href="/tree/master/src/game.nim#L224"
-class="link-seesrc" target="_blank">Source</a>
-<a href="/edit/devel/src/game.nim#L224" class="link-seesrc" target="_blank" >Edit</a>
+<a href="/edit/devel/src/components.nim#L54" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
