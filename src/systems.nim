@@ -1,18 +1,15 @@
 import 
-  ecs, 
-  game,
+  ecs,
   components, 
   sdl2,
-  macros
+  game
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 #=> Render System
 proc render*[T](game: T, lag: float) = 
   for entity in game.em.entities:
-    # TODO: Check if entity has all the necessary components!
-    if not entity.has(AABB, ColorComponent): 
-      return 
+    if not entity.has(AABB, ColorComponent): continue 
 
     let 
       aabb = entity.get(AABB)
@@ -29,16 +26,60 @@ proc render*[T](game: T, lag: float) =
 
     game.renderer.setDrawColor(r, g, b, a)
 
-  
-# method render(this: PlayerGraphicsComponent, e: Entity, 
-#     game: Game, lag: float) = 
-#   let (screenX, screenY) = game.camera.getScreenLocation((e.x, e.y))
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-#   var toDraw = rect(screenX, screenY, e.w.cint, e.h.cint)
-#   var r, g, b, a: uint8
-#   this.renderer.getDrawColor(r, g, b, a)
-#   this.renderer.setDrawColor(this.color.r, this.color.g, this.color.b)
+#=> Update System
+proc move(aabb: var AABB, xVel, yVel, dt: float) = 
+  aabb.x += int(xVel * dt)
+  aabb.y += int(yVel * dt)
 
-#   this.renderer.fillRect(toDraw)
+proc moveLeft(e: var AABB, velocity, dt: float) =
+  e.move(-velocity, 0, dt)
 
-#   this.renderer.setDrawColor(r, g, b, a)
+proc moveRight(e: var AABB, velocity, dt: float) = 
+  e.move(velocity, 0, dt)
+
+proc moveUp(e: var AABB, velocity, dt: float) = 
+  e.move(0, -velocity, dt)
+
+proc moveDown(e: var AABB, velocity, dt: float) = 
+  e.move(0, velocity, dt)
+
+proc update*(game: Game, dt: float) = 
+  if game.is_command_pressed(Command.SpeedUp): echo "ZOOOM!"
+
+  for entity in game.em.entities:
+    if not entity.has(AABB, PlayerInputComponent): continue
+
+    let 
+      input = entity.get(PlayerInputComponent)
+
+    var aabb = entity.get(AABB)
+
+    if game.is_command(Command.SpeedUp):
+      input.velocity = 800
+    else:
+      input.velocity = 100
+
+    if game.isCommand(Command.Left):
+      aabb.moveLeft(input.velocity, dt)
+    elif game.isCommand(Command.Right):
+      aabb.moveRight(input.velocity, dt)
+    if game.isCommand(Command.Up):
+      aabb.moveUp(input.velocity, dt)
+    elif game.isCommand(Command.Down):
+      aabb.moveDown(input.velocity, dt)
+
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+#=> Camera Update System
+proc cameraUpdate*(game: Game, dt: float) = 
+  for entity in game.em.entities:
+    if not entity.has(AABB, CameraFollowComponent): continue
+
+    let aabb = entity.get(AABB)
+    game.camera.x = aabb.x
+    game.camera.y = aabb.y
+
+    # Only follow the first entity
+    return

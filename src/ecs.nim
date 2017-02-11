@@ -81,9 +81,6 @@ proc add*(em: var EntityManager, e: Entity) =
   em.entities.add(e)
   # em.entities = em.entities.sortedByIt it.z
 
-
-
-
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 #=> Components

@@ -8,6 +8,11 @@ type
   ColorComponent* = ref object of Component
     r*, g*, b*: uint8
 
+  PlayerInputComponent* = ref object of Component
+    velocity*: float
+
+  CameraFollowComponent* = ref object of Component
+
   Dummy* = ref object of Component
 
 proc newDummy*(): Dummy = new result
@@ -24,3 +29,10 @@ proc newColorComponent*(r, g, b: uint8): ColorComponent =
   result.r = r
   result.g = g
   result.b = b
+
+proc newPlayerInputComponent*(): PlayerInputComponent =
+  new result 
+  result.velocity = 100
+
+proc newCameraFollowComponent*(): CameraFollowComponent = 
+  new result

@@ -9,13 +9,11 @@ import
   ecs,
   components
 
-from systems import nil
-
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 #=> Enums
 type
-  Command {.pure.} = enum 
+  Command* {.pure.} = enum 
     None,
     Fullscreen,
     Shoot,
@@ -30,35 +28,10 @@ type
     Fullscreen,
     Desktop
 
-#=> Components
-type
-  Color = tuple 
-    r: uint8
-    g: uint8
-    b: uint8
-
-  PhysicsComponent = ref object of RootObj
-  GraphicsComponent = ref object of RootObj
-
-  PlayerPhysicsComponent = ref object of PhysicsComponent  
-  PlayerGraphicsComponent = ref object of GraphicsComponent
-    renderer: RendererPtr
-    color: Color
-  
-  AIPhysicsComponent = ref object of PhysicsComponent
-
-  BoundingBoxPhysicsComponent = ref object of PhysicsComponent
-  
-  TextureGraphicsComponent = ref object of GraphicsComponent
-    renderer: RendererPtr
-    texture: TexturePtr
-    destRect: sdl2.Rect
-
 type 
   Game* = ref GameObj
-  GameObj = object 
+  GameObj* = object 
     renderer*: RendererPtr
-    dt: float
     em*: EntityManager
     player: Entity
     camera*: Camera2D
@@ -67,22 +40,26 @@ type
     isFullscreen: bool
     quitCallback: (proc (): void)
     
-  Camera2D = ref CameraObj
-  CameraObj = object 
-    x: int
-    y: int
+  Camera2D* = ref CameraObj
+  CameraObj* = object 
+    x*: int
+    y*: int
     halfWidth: int
     halfHeight: int
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-proc isCommandPressed(game: Game, command: Command): bool = 
+proc is_command_pressed*(game: Game, command: Command): bool = 
   let (pressed, repeat) = game.commands[command]
   return pressed and not repeat
 
-proc isCommand(game: Game, command: Command): bool = 
+proc is_command*(game: Game, command: Command): bool = 
   let (pressed, _) = game.commands[command]
   return pressed
+  
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+from systems import nil
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -105,7 +82,6 @@ proc render*(game: Game, lag: float) =
   ## This causes the game to render itself to the specified renderer
   game.renderer.clear()
 
-  # game.em.render(game, lag)
   systems.render(game, lag)
 
   game.renderer.present()
@@ -168,9 +144,8 @@ proc processInput*(game: var Game) =
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 proc update*(game: var Game, elapsed: float) = 
-  game.dt = elapsed
-
-  # game.em.update(game.dt)
+  systems.update(game, elapsed)
+  systems.cameraUpdate(game, elapsed)
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -180,8 +155,6 @@ proc quit*(game: Game) =
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 proc newGame*(ren: RendererPtr, size: (cint, cint), fullscreenFn: (proc (isFullscreen: bool, ftype: FullscreenType): void), exitFn: (proc())): Game = 
-  let appDir = getAppDir()
-
   new result 
   result.renderer = ren
   result.em = newEntityManager()
@@ -194,17 +167,20 @@ proc newGame*(ren: RendererPtr, size: (cint, cint), fullscreenFn: (proc (isFulls
   discard result.renderer.setDrawColor(110, 132, 174)
 
   result.player = newEntity("player")
-    .add(newAABB(10, 10, 10, 10))
+    .add(newAABB(0, 0, 50, 50))
     .add(newColorComponent(19, 10, 10))
+    .add(newPlayerInputComponent())
+    .add(newCameraFollowComponent())
 
   result.em.add(result.player)
-  # result.em.add(newEntity(
-  #   newAIPhysicsComponent(),
-  #   newPlayerGraphicsComponent(result.renderer),
-  #   (50, 50),
-  #   (200, 200)
-  # ))
+
+  result.em.add(
+    newEntity()
+      .add(newAABB(200, 200, 50, 50))
+      .add(newColorComponent(200, 200, 200))
+  )
   
+  # let appDir = getAppDir()
   # result.em.add(newEntity(
   #   newBoundingBoxPhysicsComponent(),
   #   newTextureGraphicsComponent(
