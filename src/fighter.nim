@@ -81,11 +81,11 @@ proc main =
     previous = current
     lag += elapsed
 
-    game.processInput()
+    game = game.processInput()
 
     var count = 0
     while lag >= MS_PER_UPDATE:
-      game.update(elapsed)
+      game = game.update(elapsed)
 
       lag -= MS_PER_UPDATE
       count += 1

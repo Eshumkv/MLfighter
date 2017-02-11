@@ -7,7 +7,7 @@ import
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 #=> Render System
-proc render*[T](game: T, lag: float) = 
+proc render*(game: GameObj, lag: float) = 
   for entity in game.em.entities:
     if not entity.has(AABB, ColorComponent): continue 
 
@@ -15,7 +15,7 @@ proc render*[T](game: T, lag: float) =
       aabb = entity.get(AABB)
       color = entity.get(ColorComponent)
     
-    let (screenX, screenY) = game.camera.getScreenLocation((aabb.x, aabb.y))
+    let (screenX, screenY) = game.camera.get_screen_location((aabb.x, aabb.y))
 
     var toDraw = rect(screenX, screenY, aabb.w.cint, aabb.h.cint)
     var r, g, b, a: uint8
@@ -45,10 +45,11 @@ proc moveUp(e: var AABB, velocity, dt: float) =
 proc moveDown(e: var AABB, velocity, dt: float) = 
   e.move(0, velocity, dt)
 
-proc update*(game: Game, dt: float) = 
+proc update*(game: GameObj, dt: float): GameObj = 
+  result = game
   if game.is_command_pressed(Command.SpeedUp): echo "ZOOOM!"
 
-  for entity in game.em.entities:
+  for entity in result.em.entities:
     if not entity.has(AABB, PlayerInputComponent): continue
 
     let 
@@ -73,13 +74,14 @@ proc update*(game: Game, dt: float) =
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 #=> Camera Update System
-proc cameraUpdate*(game: Game, dt: float) = 
+proc cameraUpdate*(game: GameObj, dt: float): GameObj = 
+  result = game
   for entity in game.em.entities:
     if not entity.has(AABB, CameraFollowComponent): continue
 
     let aabb = entity.get(AABB)
-    game.camera.x = aabb.x
-    game.camera.y = aabb.y
+    result.camera.x = aabb.x
+    result.camera.y = aabb.y
 
     # Only follow the first entity
-    return
+    return result

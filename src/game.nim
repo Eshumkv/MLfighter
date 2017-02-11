@@ -29,7 +29,7 @@ type
     Desktop
 
 type 
-  Game* = ref GameObj
+  #Game* = ref GameObj # In functional programming you never need it? 
   GameObj* = object 
     renderer*: RendererPtr
     em*: EntityManager
@@ -47,19 +47,20 @@ type
     halfWidth: int
     halfHeight: int
 
+  Scene* = ref object 
+    render_fn*: (proc(game: GameObj, lag: float): void)
+    update_fn*: (proc (game: var GameObj, dt: float): GameObj)
+
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-proc is_command_pressed*(game: Game, command: Command): bool = 
+# TODO: Fix this. This just doesn't work
+proc is_command_pressed*(game: GameObj, command: Command): bool = 
   let (pressed, repeat) = game.commands[command]
   return pressed and not repeat
 
-proc is_command*(game: Game, command: Command): bool = 
+proc is_command*(game: GameObj, command: Command): bool = 
   let (pressed, _) = game.commands[command]
   return pressed
-  
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-from systems import nil
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -68,17 +69,20 @@ proc newCamera(w, h: int): Camera2D =
   result.halfWidth = w div 2
   result.halfHeight = h div 2
 
-proc getScreenLocation*[T](camera: Camera2D, location: (T, T)): (cint, cint) = 
+proc get_screen_location*[T](camera: Camera2D, location: (T, T)): (cint, cint) = 
   var 
     screenX = (location[0].int - camera.x) + camera.halfWidth
     screenY = (location[1].int - camera.y) + camera.halfHeight
   
   result = (screenX.cint, screenY.cint)
 
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+from systems import nil
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-proc render*(game: Game, lag: float) = 
+proc render*(game: GameObj, lag: float) = 
   ## This causes the game to render itself to the specified renderer
   game.renderer.clear()
 
@@ -107,10 +111,11 @@ proc toCommand(key: cint): Command =
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-proc processSystemCommand(game: Game, command: Command) = 
+proc processSystemCommand(game: GameObj, command: Command): GameObj = 
+  result = game
   case command:
   of Command.Fullscreen:
-    game.isFullscreen = not game.isFullscreen
+    result.isFullscreen = not game.isFullscreen
 
     if game.setFullscreen != nil:
       if game.isFullscreen:
@@ -120,42 +125,42 @@ proc processSystemCommand(game: Game, command: Command) =
   else:
     discard
 
-proc processInput*(game: var Game) = 
+proc processInput*(game: GameObj): GameObj = 
+  result = game
   var event = defaultEvent 
 
   while pollEvent(event):
     case event.kind:
     of QuitEvent:
-      if game.quitCallback != nil:
-        game.quitCallback()
+      if result.quitCallback != nil:
+        result.quitCallback()
       else:
         # TODO: log it? 
         echo "Trying to quit :("
     of KeyDown:
       let command = event.key.keysym.sym.toCommand
-      game.commands[command] = (true, event.key.repeat)
+      result.commands[command] = (true, event.key.repeat)
       if not event.key.repeat:
-        game.processSystemCommand(command)
+        result = result.processSystemCommand(command)
     of KeyUp:
-      game.commands[event.key.keysym.sym.toCommand] = (false, false)
+      result.commands[event.key.keysym.sym.toCommand] = (false, false)
     else:
       discard
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-proc update*(game: var Game, elapsed: float) = 
-  systems.update(game, elapsed)
-  systems.cameraUpdate(game, elapsed)
+proc update*(game: GameObj, elapsed: float): GameObj = 
+  result = systems.update(game, elapsed)
+  result = systems.cameraUpdate(result, elapsed)
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-proc quit*(game: Game) = 
+proc quit*(game: GameObj) = 
   game.renderer.destroy()
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-proc newGame*(ren: RendererPtr, size: (cint, cint), fullscreenFn: (proc (isFullscreen: bool, ftype: FullscreenType): void), exitFn: (proc())): Game = 
-  new result 
+proc newGame*(ren: RendererPtr, size: (cint, cint), fullscreenFn: (proc (isFullscreen: bool, ftype: FullscreenType): void), exitFn: (proc())): GameObj = 
   result.renderer = ren
   result.em = newEntityManager()
   result.camera = newCamera(size[0], size[1])
