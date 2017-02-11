@@ -14,8 +14,13 @@ proc render*(game: GameObj, lag: float) =
     let 
       aabb = entity.get(AABB)
       color = entity.get(ColorComponent)
-    
-    let (screenX, screenY) = game.camera.get_screen_location((aabb.x, aabb.y))
+
+      # If the entity does not conform to the camera
+      (screenX, screenY) = 
+        if entity.has(StaticScreenComponent): 
+          game.camera.get_screen_location((aabb.x, aabb.y))
+        else: 
+          (aabb.x.cint, aabb.y.cint)
 
     var toDraw = rect(screenX, screenY, aabb.w.cint, aabb.h.cint)
     var r, g, b, a: uint8
@@ -28,7 +33,7 @@ proc render*(game: GameObj, lag: float) =
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-#=> Update System
+#=> Player Input Update System
 proc move(aabb: var AABB, xVel, yVel, dt: float) = 
   aabb.x += int(xVel * dt)
   aabb.y += int(yVel * dt)
@@ -45,7 +50,7 @@ proc moveUp(e: var AABB, velocity, dt: float) =
 proc moveDown(e: var AABB, velocity, dt: float) = 
   e.move(0, velocity, dt)
 
-proc update*(game: GameObj, dt: float): GameObj = 
+proc player_input_update*(game: GameObj, dt: float): GameObj = 
   result = game
   if game.is_command_pressed(Command.SpeedUp): echo "ZOOOM!"
 
@@ -74,7 +79,7 @@ proc update*(game: GameObj, dt: float): GameObj =
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 #=> Camera Update System
-proc cameraUpdate*(game: GameObj, dt: float): GameObj = 
+proc camera_update*(game: GameObj, dt: float): GameObj = 
   result = game
   for entity in game.em.entities:
     if not entity.has(AABB, CameraFollowComponent): continue
@@ -85,3 +90,17 @@ proc cameraUpdate*(game: GameObj, dt: float): GameObj =
 
     # Only follow the first entity
     return result
+
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+#=> General Update System
+proc general_update*(game: GameObj, dt: float): GameObj =
+  result = game
+  for entity in result.em.entities:
+    if entity.has(AnyInputOrWaitComponent):
+      var comp = entity.get(AnyInputOrWaitComponent)
+      comp.elapsed += dt
+      if comp.elapsed >= comp.ms or game.is_command(Command.None):
+        echo "Yay"
+        comp.elapsed = 0
+

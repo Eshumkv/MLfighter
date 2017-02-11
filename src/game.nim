@@ -33,7 +33,7 @@ type
   GameObj* = object 
     renderer*: RendererPtr
     em*: EntityManager
-    player: Entity
+    player: Entity # TODO: remove
     camera*: Camera2D
     commands: array[Command, (bool, bool)] # (pressed, repeat)
     setFullscreen: (proc (isFullscreen: bool, ftype: FullscreenType): void)
@@ -46,10 +46,6 @@ type
     y*: int
     halfWidth: int
     halfHeight: int
-
-  Scene* = ref object 
-    render_fn*: (proc(game: GameObj, lag: float): void)
-    update_fn*: (proc (game: var GameObj, dt: float): GameObj)
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -79,6 +75,7 @@ proc get_screen_location*[T](camera: Camera2D, location: (T, T)): (cint, cint) =
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 from systems import nil
+from scenes import nil
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -150,8 +147,9 @@ proc processInput*(game: GameObj): GameObj =
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 proc update*(game: GameObj, elapsed: float): GameObj = 
-  result = systems.update(game, elapsed)
-  result = systems.cameraUpdate(result, elapsed)
+  result = systems.player_input_update(game, elapsed)
+  result = systems.general_update(game, elapsed)
+  result = systems.camera_update(result, elapsed)
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -171,19 +169,7 @@ proc newGame*(ren: RendererPtr, size: (cint, cint), fullscreenFn: (proc (isFulls
   
   discard result.renderer.setDrawColor(110, 132, 174)
 
-  result.player = newEntity("player")
-    .add(newAABB(0, 0, 50, 50))
-    .add(newColorComponent(19, 10, 10))
-    .add(newPlayerInputComponent())
-    .add(newCameraFollowComponent())
-
-  result.em.add(result.player)
-
-  result.em.add(
-    newEntity()
-      .add(newAABB(200, 200, 50, 50))
-      .add(newColorComponent(200, 200, 200))
-  )
+  result = scenes.intro(result)
   
   # let appDir = getAppDir()
   # result.em.add(newEntity(

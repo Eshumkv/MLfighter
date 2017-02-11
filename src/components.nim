@@ -12,6 +12,11 @@ type
     velocity*: float
 
   CameraFollowComponent* = ref object of Component
+  StaticScreenComponent* = ref object of Component
+
+  AnyInputOrWaitComponent* = ref object of Component
+    ms*: float
+    elapsed*: float
 
   Dummy* = ref object of Component
 
@@ -36,3 +41,11 @@ proc newPlayerInputComponent*(): PlayerInputComponent =
 
 proc newCameraFollowComponent*(): CameraFollowComponent = 
   new result
+
+proc newStaticScreenComponent*(): StaticScreenComponent = 
+  new result
+
+proc newAnyInputOrWaitComponent*(ms: float): AnyInputOrWaitComponent = 
+  new result
+  result.ms = ms
+  result.elapsed = 0f
