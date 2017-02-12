@@ -22,6 +22,8 @@ type
     elapsed*: float
     callback*: (proc (game: GameObj, entity: Entity): GameObj)
 
+  CollisionComponent* = ref object of Component
+
   Dummy* = ref object of Component
 
 proc newDummy*(): Dummy = new result
@@ -56,4 +58,7 @@ proc newFadeComponent*(sec: float,
   new result
   result.sec = sec
   result.callback = cb
+
+proc newCollisionComponent*(): CollisionComponent = 
+  new result
 

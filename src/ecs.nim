@@ -7,6 +7,9 @@ import
 type
   Component* = ref object of RootObj
 
+  Rectangle* = object
+    left*, top*, right*, bottom*: int
+
   Entity* = ref EntityObj
   EntityObj* = object
     id*: string
@@ -80,6 +83,24 @@ proc has*(this: Entity, types: varargs[string, `type_to_string`]): bool =
   for t in types:
     if not this.components.contains t: return false
   true
+
+proc get_rectangle*(this: Entity): Rectangle =
+  Rectangle(
+    left: this.x, 
+    top: this.y, 
+    right: this.x + this.w, 
+    bottom: this.y + this.h)
+
+proc intersects*(this: Entity, other: Entity): bool =
+  let 
+    a = this.get_rectangle()
+    b = other.get_rectangle()
+    intersect = a.left < b.right and 
+      a.right > b.left and 
+      a.top < b.bottom and 
+      a.bottom > b.top
+  
+  return intersect
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 

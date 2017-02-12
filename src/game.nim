@@ -84,7 +84,8 @@ proc newCamera(w, h: int): Camera2D =
   result.halfWidth = w div 2
   result.halfHeight = h div 2
 
-proc get_screen_location*[T](camera: Camera2D, location: (T, T)): (cint, cint) = 
+proc get_screen_location*[T](
+    camera: Camera2D, location: (T, T)): (cint, cint) = 
   var 
     screenX = (location[0].int - camera.x) + camera.halfWidth
     screenY = (location[1].int - camera.y) + camera.halfHeight
@@ -93,7 +94,9 @@ proc get_screen_location*[T](camera: Camera2D, location: (T, T)): (cint, cint) =
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-proc change_scene*(game: GameObj, clear_entities: bool, scene: (proc (game: GameObj): GameObj)): GameObj =
+proc change_scene*(
+    game: GameObj, clear_entities: bool, 
+    scene: (proc (game: GameObj): GameObj)): GameObj =
   result = game
   result.next_scene = scene
   result.next_scene_clear_entities = clear_entities
@@ -222,7 +225,10 @@ proc quit*(game: GameObj) =
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-proc newGame*(ren: RendererPtr, size: (cint, cint), fullscreenFn: (proc (isFullscreen: bool, ftype: FullscreenType): void), exitFn: (proc())): GameObj = 
+proc newGame*(
+    ren: RendererPtr, size: (cint, cint), 
+    fullscreenFn: (proc (isFullscreen: bool, ftype: FullscreenType): void),
+    exitFn: (proc())): GameObj = 
   result.renderer = ren
   result.em = newEntityManager()
   result.camera = newCamera(size[0], size[1])

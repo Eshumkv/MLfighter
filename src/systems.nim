@@ -37,21 +37,11 @@ proc handle_rendering*(game: GameObj, lag: float) =
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 #=> Player Input Update System
-proc move(e: var Entity, xVel, yVel, dt: float) = 
-  e.x += int(xVel * dt)
-  e.y += int(yVel * dt)
-
-proc moveLeft(e: var Entity, velocity, dt: float) =
-  e.move(-velocity, 0, dt)
-
-proc moveRight(e: var Entity, velocity, dt: float) = 
-  e.move(velocity, 0, dt)
-
-proc moveUp(e: var Entity, velocity, dt: float) = 
-  e.move(0, -velocity, dt)
-
-proc moveDown(e: var Entity, velocity, dt: float) = 
-  e.move(0, velocity, dt)
+proc move(e: Entity, xVel, yVel, dt: float): (int, int) = 
+  let
+    x = e.x + int(xVel * dt)
+    y = e.y + int(yVel * dt)
+  (x, y)
 
 proc player_input_update(
     game: GameObj, entity: var Entity, dt: float): GameObj = 
@@ -66,15 +56,36 @@ proc player_input_update(
   else:
     input.velocity = 100
 
-  if game.isCommand(Command.Left):
-    entity.moveLeft(input.velocity, dt)
-  elif game.isCommand(Command.Right):
-    entity.moveRight(input.velocity, dt)
-  if game.isCommand(Command.Up):
-    entity.moveUp(input.velocity, dt)
-  elif game.isCommand(Command.Down):
-    entity.moveDown(input.velocity, dt)
+  const zero = float(0)
+  var dpos = (zero, zero)
   
+  if game.isCommand(Command.Left):
+    dpos = (-input.velocity, zero)
+  elif game.isCommand(Command.Right):
+    dpos = (input.velocity, zero)
+  if game.isCommand(Command.Up):
+    dpos = (dpos[0], -input.velocity)
+  elif game.isCommand(Command.Down):
+    dpos = (dpos[0], input.velocity)
+
+  let new_pos = entity.move(dpos[0], dpos[1], dt)
+
+  # Do we need collision?
+  if dpos != (zero, zero) and 
+      entity.id == "player" and 
+      entity.has(CollisionComponent):
+    for other_entity in result.em.entities:
+      if entity == other_entity or 
+          not other_entity.has(CollisionComponent): 
+        continue
+      let player = Entity(
+        x: new_pos[0], y: new_pos[1], 
+        w: entity.w, h: entity.h, 
+        z: entity.z, id: entity.id)
+      if not player.intersects(other_entity):
+        entity.x = new_pos[0]
+        entity.y = new_pos[1]
+
   return result
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -96,7 +107,7 @@ proc general_update(game: GameObj, entity: var Entity, dt: float): GameObj =
     comp.elapsed += dt
     if (comp.elapsed >= comp.sec or game.is_any_key()):
       result = comp.callback(comp, result)
-      # entity.remove(AnyInputOrWaitComponent)
+      entity.remove(AnyInputOrWaitComponent)
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 

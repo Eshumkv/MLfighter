@@ -13,11 +13,13 @@ proc game_scene*(game: GameObj): GameObj =
       .add(newColorComponent(19, 10, 10))
       .add(newPlayerInputComponent())
       .add(newCameraFollowComponent())
+      .add(newCollisionComponent())
   )
 
   result.em.add(
     newEntity(200, 200, 50, 50, -1)
       .add(newColorComponent(200, 200, 200))
+      .add(newCollisionComponent())
   )
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
