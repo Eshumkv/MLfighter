@@ -40,6 +40,7 @@ type
     isFullscreen: bool
     quitCallback: (proc (): void)
     next_scene: (proc (game: GameObj): GameObj)
+    next_scene_clear_entities: bool
     mouse*: MouseState
     
   Camera2D* = ref CameraObj
@@ -94,9 +95,8 @@ proc get_screen_location*[T](camera: Camera2D, location: (T, T)): (cint, cint) =
 
 proc change_scene*(game: GameObj, clear_entities: bool, scene: (proc (game: GameObj): GameObj)): GameObj =
   result = game
-  if clear_entities:
-    result.em.entities = @[]
   result.next_scene = scene
+  result.next_scene_clear_entities = clear_entities
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -109,7 +109,7 @@ from scenes import nil
 
 proc render*(game: GameObj, lag: float) = 
   game.renderer.clear()
-  systems.render(game, lag)
+  systems.handle_rendering(game, lag)
   game.renderer.present()
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -206,11 +206,12 @@ proc processInput*(game: GameObj): GameObj =
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 proc update*(game: GameObj, elapsed: float): GameObj = 
-  result = systems.player_input_update(game, elapsed)
-  result = systems.general_update(result, elapsed)
-  result = systems.camera_update(result, elapsed)
+  result = systems.handle_updates(game, elapsed)
 
   if result.next_scene != nil:
+    if result.next_scene_clear_entities:
+      result.em.entities = @[]
+      result.next_scene_clear_entities = false
     result = result.next_scene(result)
     result.next_scene = nil
 
