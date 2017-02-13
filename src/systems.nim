@@ -33,6 +33,23 @@ proc handle_rendering*(game: GameObj, lag: float) =
   for entity in game.em.entities:
     render_color_rect(game, entity, lag)
 
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+proc is_collided(
+    entity: Entity, 
+    other_entities_list: seq[Entity],
+    new_pos: (int, int)): bool = 
+
+  for other_entity in other_entities_list:
+    if entity.id == other_entity.id or 
+        not other_entity.has(CollisionComponent): continue
+    let player = Entity(
+      x: new_pos[0], y: new_pos[1], 
+      w: entity.w, h: entity.h, 
+      z: entity.z, id: entity.id)
+    if player.intersects(other_entity):
+      return true
+  return false
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -74,17 +91,12 @@ proc player_input_update(
   if dpos != (zero, zero) and 
       entity.id == "player" and 
       entity.has(CollisionComponent):
-    for other_entity in result.em.entities:
-      if entity == other_entity or 
-          not other_entity.has(CollisionComponent): 
-        continue
-      let player = Entity(
-        x: new_pos[0], y: new_pos[1], 
-        w: entity.w, h: entity.h, 
-        z: entity.z, id: entity.id)
-      if not player.intersects(other_entity):
+      if not entity.is_collided(result.em.entities, new_pos):
         entity.x = new_pos[0]
         entity.y = new_pos[1]
+  else: 
+    entity.x = new_pos[0]
+    entity.y = new_pos[1]
 
   return result
 

@@ -115,3 +115,4 @@ proc add*(em: var EntityManager, e: Entity) =
   ## Entities will be sorted based on their z, to make rendering easier
   em.entities.add(e)
   em.entities = em.entities.sortedByIt it.z
+  echo "Added entity: ", e.id
