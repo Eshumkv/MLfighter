@@ -21,6 +21,7 @@ type
   EntityManager* = ref EntityManagerObj
   EntityManagerObj* = object
     entities*: seq[Entity]
+    entities_to_add: seq[Entity]
     
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -109,10 +110,18 @@ proc newEntityManager*(): EntityManager =
   ## Create a new entitymanager 
   new result
   result.entities = @[]
+  result.entities_to_add = @[]
 
 proc add*(em: var EntityManager, e: Entity) =
   ## Add an entity to the entitymanager. 
   ## Entities will be sorted based on their z, to make rendering easier
-  em.entities.add(e)
+  em.entities_to_add.add(e)
+
+proc flip*(em: var EntityManager) =
+  ## Actually adds the entities.
+  ## Do this at a "quiet" time
+  for entity in em.entities_to_add:
+    em.entities.add(entity)
+    echo "Added entity: ", entity.id
+  em.entities_to_add = @[]
   em.entities = em.entities.sortedByIt it.z
-  echo "Added entity: ", e.id

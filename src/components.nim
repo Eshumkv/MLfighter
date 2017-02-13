@@ -1,6 +1,8 @@
 import 
   ecs,
-  game
+  game,
+  basic2d,
+  math
 
 type   
   ColorComponent* = ref object of Component
@@ -23,6 +25,16 @@ type
     callback*: (proc (game: GameObj, entity: Entity): GameObj)
 
   CollisionComponent* = ref object of Component
+
+  ShootComponent* = ref object of Component
+    speed*: float
+    elapsed*: float
+    w*, h*: int
+  
+  MoveTowardsComponent* = ref object of Component
+    speed*: float
+    start*: (int, int)
+    direction*: Vector2d
 
   Dummy* = ref object of Component
 
@@ -62,3 +74,22 @@ proc newFadeComponent*(sec: float,
 proc newCollisionComponent*(): CollisionComponent = 
   new result
 
+proc newShootComponent*(): ShootComponent = 
+  new result
+  result.speed = 0.25f
+  result.w = 5
+  result.h = 5
+
+proc newMoveTowardsComponent*[T](begin, point: (T, T), speed: float): MoveTowardsComponent =
+  new result
+  result.speed = speed
+
+  let
+    distance = sqrt(
+      pow(float(point[0]-begin[0]), 2f) + 
+      pow(float(point[1]-begin[1]), 2f))
+    dir_x = float(point[0] - begin[0]) / distance
+    dir_y = float(point[1] - begin[1]) / distance
+
+  result.direction = vector2d(dir_x, dir_y)
+  echo  result.direction

@@ -146,15 +146,15 @@ proc processSystemCommand(game: GameObj, command: Command): GameObj =
 
     if game.setFullscreen != nil:
       if game.isFullscreen:
-        game.setFullscreen(game.isFullscreen, FullscreenType.Desktop)
+        result.setFullscreen(result.isFullscreen, FullscreenType.Desktop)
       else:
-        game.setFullscreen(game.isFullscreen, FullscreenType.Windowed)
+        result.setFullscreen(result.isFullscreen, FullscreenType.Windowed)
   else:
     discard
 
 proc processInput*(game: GameObj): GameObj = 
   result = game
-  result.last_commands = game.commands
+  result.last_commands = result.commands
   var event = defaultEvent 
 
   while pollEvent(event):
@@ -179,6 +179,7 @@ proc processInput*(game: GameObj): GameObj =
       case event.button.button:
       of BUTTON_LEFT:
         result.mouse.left = true
+        result.commands[Command.Shoot] = true
       of BUTTON_MIDDLE:
         result.mouse.middle = true
       of BUTTON_RIGHT:
@@ -193,6 +194,7 @@ proc processInput*(game: GameObj): GameObj =
       case event.button.button:
       of BUTTON_LEFT:
         result.mouse.left = false
+        result.commands[Command.Shoot] = false
       of BUTTON_MIDDLE:
         result.mouse.middle = false
       of BUTTON_RIGHT:
@@ -211,12 +213,15 @@ proc processInput*(game: GameObj): GameObj =
 proc update*(game: GameObj, elapsed: float): GameObj = 
   result = systems.handle_updates(game, elapsed)
 
+  # Switch scene
   if result.next_scene != nil:
     if result.next_scene_clear_entities:
       result.em.entities = @[]
       result.next_scene_clear_entities = false
     result = result.next_scene(result)
     result.next_scene = nil
+  else:
+    result.em.flip()
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 

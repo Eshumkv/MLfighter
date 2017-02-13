@@ -2,7 +2,8 @@ import
   ecs,
   components, 
   sdl2,
-  game
+  game,
+  basic2d
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -60,30 +61,53 @@ proc move(e: Entity, xVel, yVel, dt: float): (int, int) =
     y = e.y + int(yVel * dt)
   (x, y)
 
+proc shoot(entity: Entity, game: GameObj, 
+    target: (int, int), dt: float): GameObj =
+  result = game
+  if not entity.has(ShootComponent): return result
+
+  let comp = entity.get(ShootComponent)
+  comp.elapsed += dt
+
+  if game.is_command(Command.Shoot) and comp.elapsed >= comp.speed:
+    result.em.add(
+      newEntity(entity.x, entity.y, 10, 10)
+        .add(newColorComponent(0, 255, 0))
+        .add(newMoveTowardsComponent((entity.x, entity.y), target, 300f))
+    )
+    comp.elapsed = 0
+
+
 proc player_input_update(
     game: GameObj, entity: var Entity, dt: float): GameObj = 
   result = game
   if not entity.has(PlayerInputComponent): return result
 
-  let 
-    input = entity.get(PlayerInputComponent)
+  const zero = float(0)
+  var dpos = (zero, zero)
+  let input = entity.get(PlayerInputComponent)
 
   if game.is_command(Command.SpeedUp):
     input.velocity = 800
   else:
     input.velocity = 100
-
-  const zero = float(0)
-  var dpos = (zero, zero)
   
-  if game.isCommand(Command.Left):
+  if game.is_command(Command.Left):
     dpos = (-input.velocity, zero)
-  elif game.isCommand(Command.Right):
+  elif game.is_command(Command.Right):
     dpos = (input.velocity, zero)
-  if game.isCommand(Command.Up):
+  if game.is_command(Command.Up):
     dpos = (dpos[0], -input.velocity)
-  elif game.isCommand(Command.Down):
+  elif game.is_command(Command.Down):
     dpos = (dpos[0], input.velocity)
+  
+  let 
+    w2 = 1280 / 2
+    h2 = 720 / 2
+    ma_x = game.mouse.x + entity.x
+    ma_y = game.mouse.y + entity.y
+    mouse_pos = (ma_x.float - w2, ma_y.float - h2)
+  result = entity.shoot(result, (mouse_pos[0].int, mouse_pos[1].int), dt)
 
   let new_pos = entity.move(dpos[0], dpos[1], dt)
 
@@ -97,8 +121,6 @@ proc player_input_update(
   else: 
     entity.x = new_pos[0]
     entity.y = new_pos[1]
-
-  return result
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -120,6 +142,14 @@ proc general_update(game: GameObj, entity: var Entity, dt: float): GameObj =
     if (comp.elapsed >= comp.sec or game.is_any_key()):
       result = comp.callback(comp, result)
       entity.remove(AnyInputOrWaitComponent)
+  if entity.has(MoveTowardsComponent):
+    let 
+      comp = entity.get(MoveTowardsComponent)
+      position = vector2d(entity.x.float, entity.y.float)
+      new_position = position + (comp.direction * comp.speed * dt)
+    entity.x = new_position.x.int
+    entity.y = new_position.y.int
+
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 

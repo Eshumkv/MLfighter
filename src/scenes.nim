@@ -12,27 +12,28 @@ proc get_arena(middle: (int, int), w, h: int): seq[Entity] =
     x = int(middle[0].float - (w/2))
     y = int(middle[1].float - (h/2))
     arena_width = 1
+    color = (r: 248.uint8, g: 134.uint8, b: 54.uint8)
 
   result.add(
     newEntity(x, y, arena_width, h, -10, "arenaLeft")
-      .add(newColorComponent(200, 200, 200))
+      .add(newColorComponent(color.r, color.g, color.b))
       .add(newCollisionComponent())
   )
 
   result.add(
     newEntity(x, y, w, arena_width, -10, "arenaTop")
-      .add(newColorComponent(200, 200, 200))
+      .add(newColorComponent(color.r, color.g, color.b))
       .add(newCollisionComponent())
   )
 
   result.add(
     newEntity(x + w, y, arena_width, h, -10, "arenaRight")
-      .add(newColorComponent(200, 200, 200))
+      .add(newColorComponent(color.r, color.g, color.b))
       .add(newCollisionComponent())
   )
   result.add(
     newEntity(x, y + h, w, arena_width, -10, "arenaBottom")
-      .add(newColorComponent(200, 200, 200))
+      .add(newColorComponent(color.r, color.g, color.b))
       .add(newCollisionComponent())
   )
 
@@ -45,6 +46,7 @@ proc game_scene*(game: GameObj): GameObj =
       .add(newPlayerInputComponent())
       .add(newCameraFollowComponent())
       .add(newCollisionComponent())
+      .add(newShootComponent())
   )
 
   result.em.add(
