@@ -2,7 +2,8 @@ import
   random,
   algorithm,
   tables,
-  typetraits
+  typetraits,
+  sequtils
 
 type
   Component* = ref object of RootObj
@@ -22,6 +23,7 @@ type
   EntityManagerObj* = object
     entities*: seq[Entity]
     entities_to_add: seq[Entity]
+    entities_to_remove: seq[string]
     
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -120,8 +122,15 @@ proc add*(em: var EntityManager, e: Entity) =
 proc flip*(em: var EntityManager) =
   ## Actually adds the entities.
   ## Do this at a "quiet" time
+  let testSeq = em.entities_to_remove
+  em.entities.keepItIf(not (it.id in testSeq))
+
   for entity in em.entities_to_add:
     em.entities.add(entity)
     echo "Added entity: ", entity.id
   em.entities_to_add = @[]
+  em.entities_to_remove = @[]
   em.entities = em.entities.sortedByIt it.z
+
+proc remove*(em: var EntityManager, entity: Entity) = 
+  em.entities_to_remove.add(entity.id)

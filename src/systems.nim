@@ -27,6 +27,15 @@ proc render_color_rect(game: GameObj, entity: Entity, lag: float) =
 
   game.renderer.fillRect(toDraw)
 
+  if entity.has(MoveTowardsComponent):
+    let 
+      move_comp = entity.get(MoveTowardsComponent)
+      (ts_x, ts_y) = game.camera.get_screen_location(
+        (move_comp.dest.x, move_comp.dest.y))
+    var target = rect(ts_x, ts_y, 5, 5)
+    game.renderer.setDrawColor(color.r, color.g, color.b)
+    game.renderer.fillRect(target)
+
   game.renderer.setDrawColor(r, g, b, a)
 
 
@@ -70,13 +79,17 @@ proc shoot(entity: Entity, game: GameObj,
   comp.elapsed += dt
 
   if game.is_command(Command.Shoot) and comp.elapsed >= comp.speed:
+    let 
+      n_x = entity.x + int(entity.w / 2)
+      n_y = entity.y + int(entity.h / 2)
+      v_from = vector2d(n_x.float, n_y.float)
+      v_to = vector2d(target[0].float, target[1].float)
     result.em.add(
-      newEntity(entity.x, entity.y, 10, 10)
+      newEntity(n_x, n_y, 10, 10, entity.z - 1)
         .add(newColorComponent(0, 255, 0))
-        .add(newMoveTowardsComponent((entity.x, entity.y), target, 300f))
+        .add(newMoveTowardsComponent(v_from, v_to, 300f))
     )
     comp.elapsed = 0
-
 
 proc player_input_update(
     game: GameObj, entity: var Entity, dt: float): GameObj = 
@@ -149,6 +162,9 @@ proc general_update(game: GameObj, entity: var Entity, dt: float): GameObj =
       new_position = position + (comp.direction * comp.speed * dt)
     entity.x = new_position.x.int
     entity.y = new_position.y.int
+
+    if (entity.x <= -2000 or entity.x >= 2000) or (entity.y <= -2000 or entity.y >= 2000):
+      result.em.remove(entity)
 
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
