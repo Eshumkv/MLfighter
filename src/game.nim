@@ -31,7 +31,7 @@ type
   #Game* = ref GameObj # In functional programming you never need it? 
   GameObj* = object 
     renderer*: RendererPtr
-    em*: EntityManager
+    em: EntityManager
     player: Entity # TODO: remove
     camera*: Camera2D
     commands: array[Command, bool]
@@ -100,6 +100,25 @@ proc change_scene*(
   result = game
   result.next_scene = scene
   result.next_scene_clear_entities = clear_entities
+
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+proc add_entity*(game: GameObj, entity: Entity): GameObj =
+  result = game
+  result.em.add(entity)
+
+proc remove_entity*(game: GameObj, entity: Entity): GameObj =
+  result = game
+  result.em.remove(entity)
+
+proc all_entities*(game: GameObj): seq[Entity] =
+  game.em.entities
+
+iterator all_m_entities*(game: var GameObj): var Entity =
+  var i = 0
+  while i < len(game.em.entities):
+    yield game.em.entities[i]
+    inc(i)
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 

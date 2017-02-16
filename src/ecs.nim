@@ -3,7 +3,8 @@ import
   algorithm,
   tables,
   typetraits,
-  sequtils
+  sequtils,
+  basic2d
 
 type
   Component* = ref object of RootObj
@@ -14,7 +15,7 @@ type
   Entity* = ref EntityObj
   EntityObj* = object
     id*: string
-    x*, y*: int
+    x*, y*: float
     w*, h*: int
     z*: int
     components: Table[string, Component]
@@ -44,7 +45,8 @@ proc type_to_string*(t: typedesc): string =
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 #=> Entity
-proc newEntity*(x, y, w, h: int, z: int = 0, name: string = nil): Entity = 
+proc newEntity*(x, y: float, w, h: int, z: int = 0, 
+    name: string = nil): Entity = 
   ## Create a new entity.
   new result
   result.components = initTable[string, Component]()
@@ -89,10 +91,10 @@ proc has*(this: Entity, types: varargs[string, `type_to_string`]): bool =
 
 proc get_rectangle*(this: Entity): Rectangle =
   Rectangle(
-    left: this.x, 
-    top: this.y, 
-    right: this.x + this.w, 
-    bottom: this.y + this.h)
+    left: this.x.int, 
+    top: this.y.int, 
+    right: this.x.int + this.w, 
+    bottom: this.y.int + this.h)
 
 proc intersects*(this: Entity, other: Entity): bool =
   let 
@@ -102,8 +104,10 @@ proc intersects*(this: Entity, other: Entity): bool =
       a.right > b.left and 
       a.top < b.bottom and 
       a.bottom > b.top
-  
   return intersect
+
+proc get_point*(this: Entity): Point2d =
+  point2d(this.x, this.y)
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 

@@ -33,8 +33,8 @@ type
   
   MoveTowardsComponent* = ref object of Component
     speed*: float
-    start*: Vector2d
-    dest*: Vector2d
+    start*: Point2d
+    dest*: Point2d
     direction*: Vector2d
 
   Dummy* = ref object of Component
@@ -81,12 +81,15 @@ proc newShootComponent*(): ShootComponent =
   result.w = 5
   result.h = 5
 
-proc newMoveTowardsComponent*(v_from, v_to: Vector2d, 
+proc newMoveTowardsComponent*(v_from, v_to: Point2d, 
     speed: float): MoveTowardsComponent =
   new result
   result.speed = speed
   result.start = v_from
   result.dest = v_to
-  result.direction = result.dest - result.start
-  result.direction.normalize()
+
+  var temp = result.dest - result.start
+  temp.normalize()
+
+  result.direction = temp
   echo  result.direction
